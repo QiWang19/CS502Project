@@ -217,7 +217,7 @@ void osInit(int argc, char *argv[]) {
 
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
-	mmio.Field2 = (long)test0;
+	mmio.Field2 = (long)test1;
 	mmio.Field3 = (long)PageTable;
 
 	MEM_WRITE(Z502Context, &mmio);   // Start this new Context Sequence
