@@ -73,6 +73,8 @@ void addToTimerQueue() {
 
 struct timer_Queue* delFromTimerQueue() {
 	struct timer_Queue* p = headTimer;
-	headTimer = headTimer->next;
-	return p;
+	if (headTimer != NULL) {
+		headTimer = headTimer->next;
+	}	
+	return p;		//p is the PCB has been deleted
 }
