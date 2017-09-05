@@ -174,8 +174,12 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			}
 			break;
 		case SYSNUM_GET_PROCESS_ID:
+			mmio.Mode = Z502GetProcessorNumber;
 			mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
 			MEM_READ(Z502Processor, &mmio);
+			*(long*)SystemCallData->Argument[1] = mmio.Field1;
+			*(long*)SystemCallData->Argument[2] = mmio.Field4;
+			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
