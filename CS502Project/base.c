@@ -67,13 +67,21 @@ void InterruptHandler(void) {
 			"The InterruptDevice call in the InterruptHandler has failed.\n");
 		printf("The DeviceId and Status that were returned are not valid.\n");
 	}
-
+	//take the PCB off the timer queue
+	delFromTimerQueue();
+	mmio.Mode = Z502ClearInterruptStatus;
+	mmio.Field1 = DeviceID;
+	mmio.Field2 = mmio.Field3 = 0;
+	MEM_WRITE(Z502InterruptDevice, &mmio);
 	/** REMOVE THE NEXT SIX LINES **/
-	how_many_interrupt_entries++; /** TEMP **/
+	/**how_many_interrupt_entries++;**/ /** TEMP **/
+	/**
 	if (remove_this_in_your_code && (how_many_interrupt_entries < 10)) {
 		printf("Interrupt_handler: Found device ID %d with status %d\n",
 			(int)mmio.Field1, (int)mmio.Field2);
 	}
+	**/
+
 }           // End of InterruptHandler
 
 			/************************************************************************
