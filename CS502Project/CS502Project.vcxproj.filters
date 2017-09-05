@@ -30,6 +30,9 @@
     <ClCompile Include="statePrinter.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="oscreateProcess.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="studentConfiguration.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="syscalls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oscreateProcess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

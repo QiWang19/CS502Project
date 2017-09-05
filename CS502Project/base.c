@@ -23,6 +23,7 @@ Default program start is in test0.
 4.20 Jan     2015: Thread safe code - prepare for multiprocessors
 ************************************************************************/
 
+#include			"oscreateProcess.h"
 #include             "global.h"
 #include             "syscalls.h"
 #include             "protos.h"
@@ -112,7 +113,9 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	short call_type;
 	static short do_print = 10;
 	short i;
+	INT32 Status;
 	MEMORY_MAPPED_IO mmio;
+	MEMORY_MAPPED_IO mmio1;
 
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
@@ -127,16 +130,37 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	}
 	// Write code here
 	switch (call_type) {
+		//Get time service call
 		case SYSNUM_GET_TIME_OF_DAY:
 			mmio.Mode = Z502ReturnValue;
 			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
 			MEM_READ(Z502Clock, &mmio);
 			*(long*)SystemCallData->Argument[0] = mmio.Field1;
 			break;
+		//terminate system call
 		case SYSNUM_TERMINATE_PROCESS:
 			mmio.Mode = Z502Action;
 			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
 			MEM_WRITE(Z502Halt, &mmio);
+			break;
+		case SYSNUM_SLEEP:
+			mmio.Mode = Z502Start;
+			mmio.Field1 = (long)SystemCallData->Argument[0];
+			mmio.Field2 = mmio.Field3 = 0;
+			MEM_WRITE(Z502Timer, &mmio);
+			
+			mmio1.Mode = Z502Action;
+			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
+
+			mmio.Mode = Z502Status;
+			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
+			MEM_READ(Z502Timer, &mmio);
+			Status = mmio.Field1;			
+			while (Status == DEVICE_IN_USE) {
+				MEM_WRITE(Z502Idle, &mmio1);
+				MEM_READ(Z502Timer, &mmio);
+				Status = mmio.Field1;
+			}
 			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
@@ -214,10 +238,14 @@ void osInit(int argc, char *argv[]) {
 	  //  Creation and Switching of contexts should be done in a separate routine.
 	  //  This should be done by a "OsMakeProcess" routine, so that
 	  //  test0 runs on a process recognized by the operating system.
-
+	/*if ((argc > 1) && (strcmp(argv[1], "test0") != 0)) {
+		os_create_process(argc, argv);
+	}*/
+	os_create_process(argc, argv);
+/*
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
-	mmio.Field2 = (long)test1;
+	mmio.Field2 = (long)test0;
 	mmio.Field3 = (long)PageTable;
 
 	MEM_WRITE(Z502Context, &mmio);   // Start this new Context Sequence
@@ -226,5 +254,7 @@ void osInit(int argc, char *argv[]) {
 	// Suspends this current thread
 	mmio.Field2 = START_NEW_CONTEXT_AND_SUSPEND;
 	MEM_WRITE(Z502Context, &mmio);     // Start up the context
+
+	*/
 
 }                                               // End of osInit
