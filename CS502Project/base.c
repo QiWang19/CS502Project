@@ -144,14 +144,17 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			MEM_WRITE(Z502Halt, &mmio);
 			break;
 		case SYSNUM_SLEEP:
+			//Start the timer
 			mmio.Mode = Z502Start;
 			mmio.Field1 = (long)SystemCallData->Argument[0];
 			mmio.Field2 = mmio.Field3 = 0;
 			MEM_WRITE(Z502Timer, &mmio);
-			
+			//enqueues the PCB of the running process onto the timer_queue
+			addToTimerQueue();
+			//For idle
 			mmio1.Mode = Z502Action;
 			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
-
+			//Get timer status
 			mmio.Mode = Z502Status;
 			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
 			MEM_READ(Z502Timer, &mmio);
