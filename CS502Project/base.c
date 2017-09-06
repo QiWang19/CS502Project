@@ -69,10 +69,7 @@ void InterruptHandler(void) {
 	}
 	//take the PCB off the timer queue
 	delFromTimerQueue();
-	mmio.Mode = Z502ClearInterruptStatus;
-	mmio.Field1 = DeviceID;
-	mmio.Field2 = mmio.Field3 = 0;
-	MEM_WRITE(Z502InterruptDevice, &mmio);
+	
 	/** REMOVE THE NEXT SIX LINES **/
 	/**how_many_interrupt_entries++;**/ /** TEMP **/
 	/**

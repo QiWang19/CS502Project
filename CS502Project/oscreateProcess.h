@@ -16,3 +16,5 @@ struct timer_Queue {
 	struct timer_Queue* next;
 };
 void os_create_process(int argc, char *argv[]);
+void addToTimerQueue();
+struct timer_Queue* delFromTimerQueue();
