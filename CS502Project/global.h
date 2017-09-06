@@ -99,7 +99,7 @@ You can see how these are used in z502.c in the MemoryCommon code
 
 #define      Z502Action                    0
 #define      Z502GetInterruptInfo          1
-#define		 Z502ClearInterruptStatus	   2		//????Z502InterruptClear
+
 #define      Z502ReturnValue               3
 #define      Z502Start                     4
 #define      Z502Status                    5

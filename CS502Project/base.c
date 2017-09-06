@@ -35,6 +35,8 @@ Default program start is in test0.
 //  Allows the OS and the hardware to agree on where faults occur
 extern void *TO_VECTOR[];
 
+//Defined in oscreateProcess.c
+extern struct PCB_Queue* headPCB;
 char *call_names[] = { "mem_read ", "mem_write", "read_mod ", "get_time ",
 "sleep    ", "get_pid  ", "create   ", "term_proc", "suspend  ",
 "resume   ", "ch_prior ", "send     ", "receive  ", "PhyDskRd ",
@@ -118,6 +120,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	short call_type;
 	static short do_print = 10;
 	short i;
+	struct PCB_Queue* p = headPCB;
 	INT32 Status;
 	MEMORY_MAPPED_IO mmio;
 	MEMORY_MAPPED_IO mmio1;
@@ -164,18 +167,29 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
 			MEM_READ(Z502Timer, &mmio);
 			Status = mmio.Field1;			
-			while (Status == DEVICE_IN_USE) {
-				MEM_WRITE(Z502Idle, &mmio1);
-				MEM_READ(Z502Timer, &mmio);
-				Status = mmio.Field1;
-			}
+			
+			MEM_WRITE(Z502Idle, &mmio1);
+			
 			break;
 		case SYSNUM_GET_PROCESS_ID:
-			mmio.Mode = Z502GetProcessorNumber;
-			mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
-			MEM_READ(Z502Processor, &mmio);
-			*(long*)SystemCallData->Argument[1] = mmio.Field1;
-			*(long*)SystemCallData->Argument[2] = mmio.Field4;
+			if (*(long*)SystemCallData->Argument[0] == *(long*)("")) {
+				mmio.Mode = Z502GetCurrentContext;
+				mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
+				MEM_READ(Z502Context, &mmio);
+				while (p!= NULL && p->pcb.NewContext != mmio.Field1) {
+					p = p->next;
+				}
+				if (p == NULL) {
+					printf("ERROR! Cannot find the PCB\n");
+
+				}
+				else if (p != NULL){
+					*(long*)SystemCallData->Argument[1] = p->pcb.process_ID;
+					*(long*)SystemCallData->Argument[2] = mmio.Field4;
+				}
+				
+			}
+
 			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");

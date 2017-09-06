@@ -8,11 +8,13 @@
 #include             <ctype.h>
 //Global variables
 //PCB Queue
-struct PCB_Queue* headPCB;
-struct PCB_Queue* rearPCB;
+struct PCB_Queue* headPCB = NULL;
+struct PCB_Queue* rearPCB = NULL;
 //Timer Queue
-struct timer_Queue* headTimer;
-struct timer_Queue* rearTimer;
+struct timer_Queue* headTimer = NULL;
+struct timer_Queue* rearTimer = NULL;
+//PID
+long PID = 773;
 
 //struct OS_Structures {
 //	struct Process_PCB pcb;
@@ -25,16 +27,8 @@ void os_create_process(int argc, char *argv[]) {
 	struct PCB_Queue* curtPCB;
 	void *PageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
 	pcb.PageTable = PageTable;
-	//Add curt PCB to PCB queue
-	curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
-	curtPCB->pcb = pcb;
-	curtPCB->next = NULL;
-	if (headPCB == NULL && rearPCB == NULL) {
-		headPCB = rearPCB = curtPCB;
-	}
-	else {
-		rearPCB->next = curtPCB;
-	}
+	pcb.process_ID = PID + 1;
+	
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
 	mmio.Field2 = (long)test1;
@@ -46,6 +40,17 @@ void os_create_process(int argc, char *argv[]) {
 		exit(0);
 	}
 	pcb.NewContext = mmio.Field1;
+	
+	//Add curt PCB to PCB queue
+	curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
+	curtPCB->pcb = pcb;
+	curtPCB->next = NULL;
+	if (headPCB == NULL && rearPCB == NULL) {
+		headPCB = rearPCB = curtPCB;
+	}
+	else {
+		rearPCB->next = curtPCB;
+	}
 	mmio.Mode = Z502StartContext;
 	mmio.Field2 = START_NEW_CONTEXT_AND_SUSPEND;
 	MEM_WRITE(Z502Context, &mmio);
