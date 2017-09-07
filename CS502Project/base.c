@@ -69,8 +69,21 @@ void InterruptHandler(void) {
 			"The InterruptDevice call in the InterruptHandler has failed.\n");
 		printf("The DeviceId and Status that were returned are not valid.\n");
 	}
-	//take the PCB off the timer queue
-	delFromTimerQueue();
+	
+	switch (DeviceID)
+	{
+	case TIMER_INTERRUPT:
+		delFromTimerQueue();
+		break;
+	case DISK_INTERRUPT:
+		//TODO
+		break;
+	default:
+		
+		break;
+	}
+	
+	
 	
 	/** REMOVE THE NEXT SIX LINES **/
 	/**how_many_interrupt_entries++;**/ /** TEMP **/
@@ -189,7 +202,29 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 				}
 				
 			}
-
+			break;
+		case SYSNUM_PHYSICAL_DISK_WRITE:
+			mmio.Mode = Z502DiskWrite;
+			mmio.Field1 = (long)SystemCallData->Argument[0];
+			mmio.Field2 = (long)SystemCallData->Argument[1];
+			mmio.Field3 = (char*)SystemCallData->Argument[2];
+			mmio.Field4 = 0;
+			MEM_WRITE(Z502Disk, &mmio);
+	
+			break;
+		case SYSNUM_PHYSICAL_DISK_READ:
+			mmio.Mode = Z502DiskRead;
+			mmio.Field1 = (long)SystemCallData->Argument[0];
+			mmio.Field2 = (long)SystemCallData->Argument[1];
+			mmio.Field3 = (char*)SystemCallData->Argument[2];
+			mmio.Field4 = 0;
+			MEM_WRITE(Z502Disk, &mmio);
+			break;
+		case SYSNUM_CHECK_DISK:
+			mmio.Mode = Z502CheckDisk;
+			mmio.Field1 = (long)SystemCallData->Argument[0];
+			mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
+			MEM_READ(Z502Disk, &mmio);
 			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
