@@ -83,3 +83,7 @@ struct timer_Queue* delFromTimerQueue() {
 	}	
 	return p;		//p is the PCB has been deleted
 }
+
+void addToDiskQueue() {
+
+}

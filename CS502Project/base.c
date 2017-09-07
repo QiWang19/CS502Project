@@ -52,7 +52,7 @@ this routine in the OS.
 void InterruptHandler(void) {
 	INT32 DeviceID;
 	INT32 Status;
-
+	int i = 0;
 	MEMORY_MAPPED_IO mmio;       // Enables communication with hardware
 
 	static BOOL remove_this_in_your_code = TRUE; /** TEMP **/
@@ -77,6 +77,7 @@ void InterruptHandler(void) {
 		break;
 	case DISK_INTERRUPT:
 		//TODO
+		
 		break;
 	default:
 		
@@ -210,15 +211,67 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio.Field3 = (char*)SystemCallData->Argument[2];
 			mmio.Field4 = 0;
 			MEM_WRITE(Z502Disk, &mmio);
-	
+			//For idle
+			mmio1.Mode = Z502Action;
+			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
+			MEM_WRITE(Z502Idle, &mmio1);
+			//Make sure that disk is running
+			mmio1.Mode = Z502Status;
+			mmio1.Field1 = (long)SystemCallData->Argument[0];
+			mmio1.Field2 = mmio1.Field3 = 0;
+			MEM_READ(Z502Disk, &mmio1);
+			if (mmio1.Field2 == DEVICE_IN_USE) {
+				while (mmio1.Field2 != DEVICE_FREE)
+				{
+					mmio1.Mode = Z502Status;
+					mmio1.Field1 = (long)SystemCallData->Argument[0];
+					mmio1.Field2 = mmio1.Field3 = 0;
+					MEM_READ(Z502Disk, &mmio1);
+				}
+			}
+			else {
+				printf("Got erroneous result for Disk Status - Device is free.\n");
+			}
 			break;
 		case SYSNUM_PHYSICAL_DISK_READ:
+			//Make sure the disk is free
+			mmio1.Mode = Z502Status;
+			mmio1.Field1 = (long)SystemCallData->Argument[0];
+			mmio1.Field2 = mmio1.Field3 = 0;
+			MEM_READ(Z502Disk, &mmio1);
+			if (mmio1.Field2 == DEVICE_IN_USE) {
+				while (mmio1.Field2 != DEVICE_FREE)
+				{
+					mmio1.Mode = Z502Status;
+					mmio1.Field1 = (long)SystemCallData->Argument[0];
+					mmio1.Field2 = mmio1.Field3 = 0;
+					MEM_READ(Z502Disk, &mmio1);
+				}
+			}
 			mmio.Mode = Z502DiskRead;
 			mmio.Field1 = (long)SystemCallData->Argument[0];
 			mmio.Field2 = (long)SystemCallData->Argument[1];
 			mmio.Field3 = (char*)SystemCallData->Argument[2];
 			mmio.Field4 = 0;
 			MEM_WRITE(Z502Disk, &mmio);
+			//For idle
+			mmio1.Mode = Z502Action;
+			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
+			MEM_WRITE(Z502Idle, &mmio1);
+			//Wait for the disk action to complete
+			mmio1.Mode = Z502Status;
+			mmio1.Field1 = (long)SystemCallData->Argument[0];
+			mmio1.Field2 = mmio1.Field3 = 0;
+			MEM_READ(Z502Disk, &mmio1);
+			if (mmio1.Field2 == DEVICE_IN_USE) {
+				while (mmio1.Field2 != DEVICE_FREE)
+				{
+					mmio1.Mode = Z502Status;
+					mmio1.Field1 = (long)SystemCallData->Argument[0];
+					mmio1.Field2 = mmio1.Field3 = 0;
+					MEM_READ(Z502Disk, &mmio1);
+				}
+			}
 			break;
 		case SYSNUM_CHECK_DISK:
 			mmio.Mode = Z502CheckDisk;
