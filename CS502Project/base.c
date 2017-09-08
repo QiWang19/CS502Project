@@ -143,7 +143,8 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	INT32 Status;
 	MEMORY_MAPPED_IO mmio;
 	MEMORY_MAPPED_IO mmio1;
-
+	//other variable
+	int flag = 0;		//flag is 1 the PCB is deleted from timmer queue
 
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
@@ -190,7 +191,10 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			Status = mmio.Field1;		
 			
 			MEM_WRITE(Z502Idle, &mmio1);
-			
+			while (flag != 1) {
+				flag = isDelFromTimerQueue();
+				
+			}
 			
 			break;
 		case SYSNUM_GET_PROCESS_ID:

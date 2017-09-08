@@ -31,7 +31,7 @@ void os_create_process(int argc, char *argv[]) {
 	
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
-	mmio.Field2 = (long)test2;
+	mmio.Field2 = (long)test1;
 	mmio.Field3 = (long)PageTable;
 	mmio.Field4 = 0;
 	MEM_WRITE(Z502Context, &mmio);
@@ -72,8 +72,24 @@ void addToTimerQueue() {
 	else
 	{
 		rearTimer->next = curt;
+		rearTimer = curt;
 	}
 	
+}
+
+int isDelFromTimerQueue() {
+	//int ans = 0;
+	struct timer_Queue* p = headTimer;
+	struct PCB_Queue* q = rearPCB;
+	while (p != NULL) {
+		if (p->curtPCB->pcb.process_ID == q->pcb.process_ID) {
+			return 0;
+		}
+		else {
+			p = p->next;
+		}
+	}
+	return 1;
 }
 
 struct timer_Queue* delFromTimerQueue() {
