@@ -1163,6 +1163,7 @@ void HaltSimulation(void) {
 					  *****************************************************************/
 
 void IdleSimulation(void) {
+	
 	INT32 time_of_next_event;
 	static INT32 NumberOfIdlesWithNothingOnEventQueue = 0;
 
@@ -1203,7 +1204,9 @@ void IdleSimulation(void) {
 		&& (CurrentSimulationTime < (UINT32)time_of_next_event))
 		CurrentSimulationTime = time_of_next_event;
 	ReleaseLock(HardwareLock, "Z502Simulation");
+	
 	SignalCondition(InterruptCondition, "Z502Simulation");
+	
 }                    // End of Z502Idle
 
 					 /*****************************************************************

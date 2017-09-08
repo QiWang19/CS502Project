@@ -37,6 +37,7 @@ extern void *TO_VECTOR[];
 
 //Defined in oscreateProcess.c
 extern struct PCB_Queue* headPCB;
+extern struct timer_Queue* headTimer;
 char *call_names[] = { "mem_read ", "mem_write", "read_mod ", "get_time ",
 "sleep    ", "get_pid  ", "create   ", "term_proc", "suspend  ",
 "resume   ", "ch_prior ", "send     ", "receive  ", "PhyDskRd ",
@@ -52,18 +53,20 @@ this routine in the OS.
 void InterruptHandler(void) {
 	INT32 DeviceID;
 	INT32 Status;
-	int i = 0;
+	
 	MEMORY_MAPPED_IO mmio;       // Enables communication with hardware
 
 	static BOOL remove_this_in_your_code = TRUE; /** TEMP **/
 	static INT32 how_many_interrupt_entries = 0; /** TEMP **/
-
+	
 												 // Get cause of interrupt
 	mmio.Mode = Z502GetInterruptInfo;
 	mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
 	MEM_READ(Z502InterruptDevice, &mmio);
 	DeviceID = mmio.Field1;
 	Status = mmio.Field2;
+	
+
 	if (mmio.Field4 != ERR_SUCCESS) {
 		printf(
 			"The InterruptDevice call in the InterruptHandler has failed.\n");
@@ -73,9 +76,11 @@ void InterruptHandler(void) {
 	switch (DeviceID)
 	{
 	case TIMER_INTERRUPT:
+		
 		delFromTimerQueue();
 		break;
-	case DISK_INTERRUPT:
+	case DISK_INTERRUPT_DISK0:
+		
 		//TODO
 		
 		break;
@@ -139,6 +144,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	MEMORY_MAPPED_IO mmio;
 	MEMORY_MAPPED_IO mmio1;
 
+
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
 		printf("SVC handler: %s\n", call_names[call_type]);
@@ -173,6 +179,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			MEM_WRITE(Z502Timer, &mmio);
 			//enqueues the PCB of the running process onto the timer_queue
 			addToTimerQueue();
+						
 			//For idle
 			mmio1.Mode = Z502Action;
 			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
@@ -180,9 +187,10 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio.Mode = Z502Status;
 			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
 			MEM_READ(Z502Timer, &mmio);
-			Status = mmio.Field1;			
+			Status = mmio.Field1;		
 			
 			MEM_WRITE(Z502Idle, &mmio1);
+			
 			
 			break;
 		case SYSNUM_GET_PROCESS_ID:
@@ -272,6 +280,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 					MEM_READ(Z502Disk, &mmio1);
 				}
 			}
+			
 			break;
 		case SYSNUM_CHECK_DISK:
 			mmio.Mode = Z502CheckDisk;

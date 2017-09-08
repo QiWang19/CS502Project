@@ -14,7 +14,7 @@ struct PCB_Queue* rearPCB = NULL;
 struct timer_Queue* headTimer = NULL;
 struct timer_Queue* rearTimer = NULL;
 //PID
-long PID = 773;
+long PID = 7;
 
 //struct OS_Structures {
 //	struct Process_PCB pcb;
@@ -80,7 +80,7 @@ struct timer_Queue* delFromTimerQueue() {
 	struct timer_Queue* p = headTimer;
 	if (headTimer != NULL) {
 		headTimer = headTimer->next;
-	}	
+	}
 	return p;		//p is the PCB has been deleted
 }
 
