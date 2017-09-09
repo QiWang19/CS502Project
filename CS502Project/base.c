@@ -145,6 +145,11 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	MEMORY_MAPPED_IO mmio1;
 	//other variable
 	int flag = 0;		//flag is 1 the PCB is deleted from timmer queue
+	char* pName;		//The name of the process to be created, getID
+	long pID;			//The ID of the process to be created, getID
+	long pPriority;		//The priority of the process to be created
+	BOOL duplicateName = FALSE;			//The process of the same name has been created
+	
 
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
@@ -193,7 +198,6 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			MEM_WRITE(Z502Idle, &mmio1);
 			while (flag != 1) {
 				flag = isDelFromTimerQueue();
-				
 			}
 			
 			break;
@@ -206,14 +210,38 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 					p = p->next;
 				}
 				if (p == NULL) {
-					printf("ERROR! Cannot find the PCB\n");
+					printf("ERROR! Process does not exist\n");
 
 				}
 				else if (p != NULL){
 					*(long*)SystemCallData->Argument[1] = p->pcb.process_ID;
-					*(long*)SystemCallData->Argument[2] = mmio.Field4;
+					*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
 				}
-				
+			}
+			else {
+				pName = (char*)SystemCallData->Argument[0];
+				pID = *(long*)SystemCallData->Argument[1];
+				while (p != NULL) {
+					if (strcmp(p->pcb.process_Name, pName) == 0 || p->pcb.process_ID == pID) {
+						break;
+					}
+					else {
+						p = p->next;
+					}
+				}
+				if (p == NULL) {
+					printf("ERROR!\n");
+				}
+				else if (strcmp(p->pcb.process_Name, pName) == 0 && p->pcb.process_ID == pID) {		//find the process
+					*(long*)SystemCallData->Argument[1] = p->pcb.process_ID;
+					*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
+				}
+				else if (strcmp(p->pcb.process_Name, pName) != 0) {
+					printf("Illegal ProcessName\n");
+				}
+				else if (p->pcb.process_ID != pID) {
+					printf("Process does not exist\n");
+				}
 			}
 			break;
 		case SYSNUM_PHYSICAL_DISK_WRITE:
@@ -291,6 +319,35 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio.Field1 = (long)SystemCallData->Argument[0];
 			mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
 			MEM_READ(Z502Disk, &mmio);
+			break;
+		case SYSNUM_CREATE_PROCESS:
+			pName = (char*)SystemCallData->Argument[0];
+			pPriority = *(long*)SystemCallData->Argument[2];
+			//Get number of process
+
+			//Set number of process
+
+			//Set number of process error cannot create
+
+			if (pPriority < 0) {
+				printf("Illegal priority\n");
+				break;
+			}
+			while (p != NULL) {
+				if (strcmp(p->pcb.process_Name, pName) == 0) {
+					break;
+				}
+				else {
+					p = p->next;
+				}
+			}
+			if (p != NULL) {
+				printf("Illegal or duplicate process names\n");
+				break;
+			}
+			//TODO
+			createProcesSysCall();
+
 			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");

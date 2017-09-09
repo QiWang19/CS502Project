@@ -3,6 +3,8 @@ struct Process_PCB
 	long process_ID;
 	long NewContext;
 	void *PageTable;
+	char* process_Name;
+	long processPriority;
 };
 
 struct PCB_Queue

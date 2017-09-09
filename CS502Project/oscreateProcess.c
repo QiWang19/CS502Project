@@ -31,7 +31,7 @@ void os_create_process(int argc, char *argv[]) {
 	
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
-	mmio.Field2 = (long)test1;
+	mmio.Field2 = (long)test3;
 	mmio.Field3 = (long)PageTable;
 	mmio.Field4 = 0;
 	MEM_WRITE(Z502Context, &mmio);
