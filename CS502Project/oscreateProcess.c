@@ -23,20 +23,21 @@ long lenPCBQ = 0;
 //
 //};
 
-void os_create_process(int argc, char *argv[]) {
+void os_create_process(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;
 	struct Process_PCB pcb;
 	struct PCB_Queue* curtPCB;
 	void *PageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
 	pcb.PageTable = PageTable;
 	pcb.process_ID = PID + 1;
-	pcb.processPriority = 10;
-	//
-	char* ProcessName = "test3";
+	//Set pcb name
+	pcb.process_Name = (char*)malloc(256);
+	strcpy(pcb.process_Name, ProcessName);
+	//char* ProcessName = "test3";
 
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
-	mmio.Field2 = (long)test3;
+	mmio.Field2 = (long)StartingAddress;
 	mmio.Field3 = (long)PageTable;
 	mmio.Field4 = 0;
 	MEM_WRITE(Z502Context, &mmio);
@@ -45,8 +46,8 @@ void os_create_process(int argc, char *argv[]) {
 		exit(0);
 	}
 	pcb.NewContext = mmio.Field1;
-	pcb.process_Name = (char *)malloc(256);
-	strcpy(pcb.process_Name, ProcessName);
+	pcb.processPriority = InitialPriority;
+
 	//Add curt PCB to PCB queue
 	curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
 	curtPCB->pcb = pcb;

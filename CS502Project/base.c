@@ -334,32 +334,28 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 				*(long*)SystemCallData->Argument[3] = pID;
 				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 				break;
-			}
-		
-
+			}		
+			//cannot create if illegal priority
 			if (pPriority < 0) {
 				printf("Illegal priority\n");
 				*(long*)SystemCallData->Argument[3] = pID;
 				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 				break;
 			}
-			while (p != NULL) {
-				
+			//If name is duplicate
+			while (p != NULL) {				
 				if (strcmp(p->pcb.process_Name, pName) == 0) {
-					//printf("Illegal or duplicate process names\n");
-					//*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 					break;
 				}
 				else {
 					p = p->next;
 				}
 			}
-			if (p != NULL) {
+			if (p != NULL) {										//duplicate name
 				printf("Illegal or duplicate process names\n");
 				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 				break;
 			}
-			//TODO
 			createProcesTest3(pName, (long)SystemCallData->Argument[1], pPriority, &pID, &res);
 			*(long*)SystemCallData->Argument[3] = pID;
 			*(long*)SystemCallData->Argument[4] = res;
@@ -440,10 +436,30 @@ void osInit(int argc, char *argv[]) {
 	  //  Creation and Switching of contexts should be done in a separate routine.
 	  //  This should be done by a "OsMakeProcess" routine, so that
 	  //  test0 runs on a process recognized by the operating system.
-	/*if ((argc > 1) && (strcmp(argv[1], "test0") != 0)) {
-		os_create_process(argc, argv);
-	}*/
-	os_create_process(argc, argv);
+	
+	//use command to create process
+	long testAddress = (long)test0;
+	char* testName = (char*)malloc(256);
+	long newProcessID = 0;
+	long ErrorReturned = 0;
+	if (argv[1] == NULL) {
+		testAddress = (long)test0;
+		testName = "test0";
+	}
+	else if (strcmp(argv[1], "test1") == 0) {
+		testAddress = (long)test1;
+		strcpy(testName, argv[1]);
+	}
+	else if (strcmp(argv[1], "test2") == 0) {
+		testAddress = (long)test2;
+		strcpy(testName, argv[1]);
+	}
+	else if (strcmp(argv[1], "test3") == 0) {
+		testAddress = (long)test3;
+		strcpy(testName, argv[1]);
+	}
+	
+	os_create_process(testName, testAddress, 10, &newProcessID, &ErrorReturned);
 /*
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
