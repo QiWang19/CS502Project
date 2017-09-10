@@ -3,7 +3,7 @@ struct Process_PCB
 	long process_ID;
 	long NewContext;
 	void *PageTable;
-	char* process_Name;
+	char* process_Name ;
 	long processPriority;
 };
 
@@ -19,4 +19,5 @@ struct timer_Queue {
 };
 void os_create_process(int argc, char *argv[]);
 void addToTimerQueue();
+void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned);
 struct timer_Queue* delFromTimerQueue();

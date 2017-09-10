@@ -38,6 +38,8 @@ extern void *TO_VECTOR[];
 //Defined in oscreateProcess.c
 extern struct PCB_Queue* headPCB;
 extern struct timer_Queue* headTimer;
+extern long lenPCBQ;
+
 char *call_names[] = { "mem_read ", "mem_write", "read_mod ", "get_time ",
 "sleep    ", "get_pid  ", "create   ", "term_proc", "suspend  ",
 "resume   ", "ch_prior ", "send     ", "receive  ", "PhyDskRd ",
@@ -146,10 +148,10 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	//other variable
 	int flag = 0;		//flag is 1 the PCB is deleted from timmer queue
 	char* pName;		//The name of the process to be created, getID
-	long pID;			//The ID of the process to be created, getID
+	long pID = 0;			//The ID of the process to be created, getID
 	long pPriority;		//The priority of the process to be created
 	BOOL duplicateName = FALSE;			//The process of the same name has been created
-	
+	long res;			//the result of create process
 
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
@@ -196,9 +198,9 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			Status = mmio.Field1;		
 			
 			MEM_WRITE(Z502Idle, &mmio1);
-			while (flag != 1) {
+			/*while (flag != 1) {
 				flag = isDelFromTimerQueue();
-			}
+			}*/
 			
 			break;
 		case SYSNUM_GET_PROCESS_ID:
@@ -206,7 +208,9 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 				mmio.Mode = Z502GetCurrentContext;
 				mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
 				MEM_READ(Z502Context, &mmio);
+				
 				while (p!= NULL && p->pcb.NewContext != mmio.Field1) {
+					
 					p = p->next;
 				}
 				if (p == NULL) {
@@ -218,31 +222,31 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 					*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
 				}
 			}
-			else {
-				pName = (char*)SystemCallData->Argument[0];
-				pID = *(long*)SystemCallData->Argument[1];
-				while (p != NULL) {
-					if (strcmp(p->pcb.process_Name, pName) == 0 || p->pcb.process_ID == pID) {
-						break;
-					}
-					else {
-						p = p->next;
-					}
-				}
-				if (p == NULL) {
-					printf("ERROR!\n");
-				}
-				else if (strcmp(p->pcb.process_Name, pName) == 0 && p->pcb.process_ID == pID) {		//find the process
-					*(long*)SystemCallData->Argument[1] = p->pcb.process_ID;
-					*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
-				}
-				else if (strcmp(p->pcb.process_Name, pName) != 0) {
-					printf("Illegal ProcessName\n");
-				}
-				else if (p->pcb.process_ID != pID) {
-					printf("Process does not exist\n");
-				}
-			}
+			//else {
+			//	pName = (char*)SystemCallData->Argument[0];
+			//	pID = *(long*)SystemCallData->Argument[1];
+			//	while (p != NULL) {
+			//		if (strcmp(p->pcb.process_Name, pName) == 0 || p->pcb.process_ID == pID) {
+			//			break;
+			//		}
+			//		else {
+			//			p = p->next;
+			//		}
+			//	}
+			//	if (p == NULL) {
+			//		printf("ERROR!\n");
+			//	}
+			//	else if (strcmp(p->pcb.process_Name, pName) == 0 && p->pcb.process_ID == pID) {		//find the process
+			//		*(long*)SystemCallData->Argument[1] = p->pcb.process_ID;
+			//		*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
+			//	}
+			//	else if (strcmp(p->pcb.process_Name, pName) != 0) {
+			//		printf("Illegal ProcessName\n");
+			//	}
+			//	else if (p->pcb.process_ID != pID) {
+			//		printf("Process does not exist\n");
+			//	}
+			//}
 			break;
 		case SYSNUM_PHYSICAL_DISK_WRITE:
 			mmio.Mode = Z502DiskWrite;
@@ -322,19 +326,28 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			break;
 		case SYSNUM_CREATE_PROCESS:
 			pName = (char*)SystemCallData->Argument[0];
-			pPriority = *(long*)SystemCallData->Argument[2];
+			
+			pPriority = (long)SystemCallData->Argument[2];
+			
 			//Get number of process
-
-			//Set number of process
-
-			//Set number of process error cannot create
+			if (lenPCBQ + 1 > 15) {
+				*(long*)SystemCallData->Argument[3] = pID;
+				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
+				break;
+			}
+		
 
 			if (pPriority < 0) {
 				printf("Illegal priority\n");
+				*(long*)SystemCallData->Argument[3] = pID;
+				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 				break;
 			}
 			while (p != NULL) {
+				
 				if (strcmp(p->pcb.process_Name, pName) == 0) {
+					//printf("Illegal or duplicate process names\n");
+					//*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 					break;
 				}
 				else {
@@ -343,11 +356,13 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			}
 			if (p != NULL) {
 				printf("Illegal or duplicate process names\n");
+				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 				break;
 			}
 			//TODO
-			createProcesSysCall();
-
+			createProcesTest3(pName, (long)SystemCallData->Argument[1], pPriority, &pID, &res);
+			*(long*)SystemCallData->Argument[3] = pID;
+			*(long*)SystemCallData->Argument[4] = res;
 			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
