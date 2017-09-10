@@ -458,6 +458,10 @@ void osInit(int argc, char *argv[]) {
 		testAddress = (long)test3;
 		strcpy(testName, argv[1]);
 	}
+	else if (strcmp(argv[1], "test4") == 0) {
+		testAddress = (long)test4;
+		strcpy(testName, argv[1]);
+	}
 	
 	os_create_process(testName, testAddress, 10, &newProcessID, &ErrorReturned);
 /*

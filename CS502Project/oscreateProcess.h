@@ -15,9 +15,10 @@ struct PCB_Queue
 
 struct timer_Queue {
 	struct PCB_Queue* curtPCB;
+	long timerEndTime;
 	struct timer_Queue* next;
 };
-void os_create_process(int argc, char *argv[]);
+void os_create_process(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned);
 void addToTimerQueue();
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned);
 struct timer_Queue* delFromTimerQueue();
