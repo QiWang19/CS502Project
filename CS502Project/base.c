@@ -84,7 +84,7 @@ void InterruptHandler(void) {
 	case DISK_INTERRUPT_DISK0:
 		
 		//TODO:
-		
+		delFromDiskQueue();
 		break;
 	default:
 		
@@ -255,6 +255,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio.Field3 = (char*)SystemCallData->Argument[2];
 			mmio.Field4 = 0;
 			MEM_WRITE(Z502Disk, &mmio);
+			addToDiskQueue();
 			//For idle
 			mmio1.Mode = Z502Action;
 			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
@@ -298,6 +299,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio.Field3 = (char*)SystemCallData->Argument[2];
 			mmio.Field4 = 0;
 			MEM_WRITE(Z502Disk, &mmio);
+			addToDiskQueue();
 			//For idle
 			mmio1.Mode = Z502Action;
 			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
@@ -444,8 +446,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test0;
-		testName = "test0";
+		testAddress = (long)test3;
+		testName = "test3";
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
