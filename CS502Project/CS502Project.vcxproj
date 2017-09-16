@@ -113,6 +113,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="base.c" />
+    <ClCompile Include="disk.c" />
     <ClCompile Include="oscreateProcess.c" />
     <ClCompile Include="sample.c" />
     <ClCompile Include="statePrinter.c" />
@@ -120,6 +121,7 @@
     <ClCompile Include="z502.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="disk.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="oscreateProcess.h" />
     <ClInclude Include="protos.h" />

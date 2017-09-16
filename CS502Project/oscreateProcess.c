@@ -17,6 +17,8 @@ struct timer_Queue* rearTimer = NULL;
 long PID = 7;
 //PCB_Queue length
 long lenPCBQ = 0;
+//TODO:
+struct PCB_Queue* curtProcessPCB = NULL;
 
 //struct OS_Structures {
 //	struct Process_PCB pcb;
@@ -60,7 +62,8 @@ void os_create_process(char* ProcessName, long StartingAddress, long InitialPrio
 		rearPCB = curtPCB;
 	}
 	lenPCBQ = lenPCBQ + 1;
-	
+	curtProcessPCB = rearPCB;
+
 	mmio.Mode = Z502StartContext;
 	mmio.Field2 = START_NEW_CONTEXT_AND_SUSPEND;
 	MEM_WRITE(Z502Context, &mmio);
@@ -109,10 +112,6 @@ struct timer_Queue* delFromTimerQueue() {
 		headTimer = headTimer->next;
 	}
 	return p;		//p is the PCB has been deleted
-}
-
-void addToDiskQueue() {
-
 }
 
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {

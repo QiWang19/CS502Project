@@ -443,8 +443,8 @@ void osInit(int argc, char *argv[]) {
 	long newProcessID = 0;
 	long ErrorReturned = 0;
 	if (argv[1] == NULL) {
-		testAddress = (long)test0;
-		testName = "test0";
+		testAddress = (long)test3;
+		testName = "test3";
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
