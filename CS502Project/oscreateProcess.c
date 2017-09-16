@@ -74,19 +74,43 @@ void os_create_process(char* ProcessName, long StartingAddress, long InitialPrio
 		
 }
 
-void addToTimerQueue() {
+void addToTimerQueue(long sleepTime) {
 	struct timer_Queue* curt;
+	struct timer_Queue* q;
+	struct timer_Queue* p = (struct timer_Queue*)malloc(sizeof(struct timer_Queue));
+	p->next = headTimer;
+
 	curt = (struct timer_Queue*)malloc(sizeof(struct timer_Queue));
-	curt->curtPCB = rearPCB;
+	//curt->curtPCB = rearPCB;
+	curt->curtPCB = curtProcessPCB;
 	curt->next = NULL;
+	MEMORY_MAPPED_IO mmio;
+	mmio.Mode = Z502ReturnValue;
+	mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
+	MEM_READ(Z502Clock, &mmio);
+	curt->timerEndTime = (long)(sleepTime + mmio.Field1);
 
 	if (headTimer == NULL && rearTimer == NULL) {
 		headTimer = rearTimer = curt;
 	}
 	else
 	{
-		rearTimer->next = curt;
-		rearTimer = curt;
+		//rearTimer->next = curt;
+		//rearTimer = curt;
+		while (p->next != NULL && p->next->timerEndTime <= curt->timerEndTime)
+		{
+			p = p->next;
+		}
+	
+		curt->next = p->next;
+		p->next = curt;
+		if (curt->next == headTimer) {
+			headTimer = curt;
+		}
+		else if (curt->next == NULL) {
+			rearTimer = curt;
+		}
+		free(p);
 	}
 	
 }

@@ -152,7 +152,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	long pPriority;		//The priority of the process to be created
 	BOOL duplicateName = FALSE;			//The process of the same name has been created
 	long res;			//the result of create process
-
+	long sleepTime;		//sleep time in sleep system call
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
 		printf("SVC handler: %s\n", call_names[call_type]);
@@ -184,9 +184,10 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio.Mode = Z502Start;
 			mmio.Field1 = (long)SystemCallData->Argument[0];
 			mmio.Field2 = mmio.Field3 = 0;
+			sleepTime = (long)SystemCallData->Argument[0];
 			MEM_WRITE(Z502Timer, &mmio);
 			//enqueues the PCB of the running process onto the timer_queue
-			addToTimerQueue();
+			addToTimerQueue(sleepTime);
 						
 			//For idle
 			mmio1.Mode = Z502Action;
@@ -446,8 +447,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test3;
-		testName = "test3";
+		testAddress = (long)test1;
+		testName = "test1";
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
