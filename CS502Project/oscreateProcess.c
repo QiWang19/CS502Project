@@ -106,12 +106,12 @@ int isDelFromTimerQueue() {
 	return 1;
 }
 
-struct timer_Queue* delFromTimerQueue() {
+void delFromTimerQueue() {
 	struct timer_Queue* p = headTimer;
 	if (headTimer != NULL) {
 		headTimer = headTimer->next;
 	}
-	return p;		//p is the PCB has been deleted
+	free(p);	//p is the PCB has been deleted
 }
 
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {

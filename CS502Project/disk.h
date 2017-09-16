@@ -1,9 +1,9 @@
 #include "oscreateProcess.h"
 struct Disk_Queue{
-	struct Process_PCB pcb;
+	struct PCB_Queue* curtPCB;
 	long DiskID;
 	struct Disk_Queue* next;
 };
 
 void addToDiskQueue();
-struct DiskQueue* delFromDiskQueue();
+void delFromDiskQueue();

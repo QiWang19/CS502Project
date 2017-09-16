@@ -22,4 +22,4 @@ void os_create_process(char* ProcessName, long StartingAddress, long InitialPrio
 //TODO: add according to the endTime comparision
 void addToTimerQueue();
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned);
-struct timer_Queue* delFromTimerQueue();
+void delFromTimerQueue();

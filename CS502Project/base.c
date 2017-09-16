@@ -83,7 +83,7 @@ void InterruptHandler(void) {
 		break;
 	case DISK_INTERRUPT_DISK0:
 		
-		//TODO
+		//TODO:
 		
 		break;
 	default:
@@ -442,9 +442,10 @@ void osInit(int argc, char *argv[]) {
 	char* testName = (char*)malloc(256);
 	long newProcessID = 0;
 	long ErrorReturned = 0;
+	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test3;
-		testName = "test3";
+		testAddress = (long)test0;
+		testName = "test0";
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
