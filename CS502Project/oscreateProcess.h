@@ -29,7 +29,9 @@ void os_create_process(char* ProcessName, long StartingAddress, long InitialPrio
 //TODO: add according to the endTime comparision
 void addToTimerQueue(long sleepTime);
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned);
-void delFromTimerQueue();
+struct PCB_Queue* delFromTimerQueue();
 //TODO: reayQ
 void addToReadyQueue(struct PCB_Queue* curtPCB);
 void delFromReadyQueue();
+//dispatcher
+void dispatcher();

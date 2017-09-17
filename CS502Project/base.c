@@ -61,6 +61,9 @@ void InterruptHandler(void) {
 	static BOOL remove_this_in_your_code = TRUE; /** TEMP **/
 	static INT32 how_many_interrupt_entries = 0; /** TEMP **/
 	
+	//variables
+	struct PCB_Queue* deletedTimerPCB;			//the pointer to the pcb just del from timerQ
+
 												 // Get cause of interrupt
 	mmio.Mode = Z502GetInterruptInfo;
 	mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
@@ -79,7 +82,8 @@ void InterruptHandler(void) {
 	{
 	case TIMER_INTERRUPT:
 		
-		delFromTimerQueue();
+		deletedTimerPCB = delFromTimerQueue();
+		addToReadyQueue(deletedTimerPCB);
 		break;
 	case DISK_INTERRUPT_DISK0:
 		
@@ -202,7 +206,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			/*while (flag != 1) {
 				flag = isDelFromTimerQueue();
 			}*/
-			
+			dispatcher();
 			break;
 		case SYSNUM_GET_PROCESS_ID:
 			if (*(long*)SystemCallData->Argument[0] == *(long*)("")) {

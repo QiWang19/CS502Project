@@ -149,12 +149,14 @@ int isDelFromTimerQueue() {
 	return 1;
 }
 
-void delFromTimerQueue() {
+struct PCB_Queue* delFromTimerQueue() {
 	struct timer_Queue* p = headTimer;
+	struct PCB_Queue* q = p->curtPCB;
 	if (headTimer != NULL) {
 		headTimer = headTimer->next;
 	}
 	free(p);	//p is the PCB has been deleted
+	return q;
 }
 
 void addToReadyQueue(struct PCB_Queue* curtPCB)
@@ -173,6 +175,36 @@ void addToReadyQueue(struct PCB_Queue* curtPCB)
 
 void delFromReadyQueue()
 {
+	struct Ready_Queue* p = headReadyQ;
+	if (headReadyQ != NULL) {
+		headReadyQ = headReadyQ->next;
+	}
+	free(p);
+}
+//del from readyQ, start context and suspend curt process
+void dispatcher() {
+	struct Ready_Queue* p = headReadyQ;
+	MEMORY_MAPPED_IO mmio;
+	//syscalls.h line 88
+	if (headReadyQ == NULL) {
+		while (headReadyQ == NULL) {
+				CALL();
+			}
+	}
+	if (headReadyQ != NULL && p != NULL) {
+		mmio.Mode = Z502StartContext;
+		mmio.Field1 = p->curtPCB->pcb.NewContext;
+		mmio.Field2 = START_NEW_CONTEXT_AND_SUSPEND;
+		//delFromReadyQueue();
+		MEM_WRITE(Z502Context, &mmio);
+		if (mmio.Field4 != ERR_SUCCESS) {
+		printf("Start Context has an error\n");
+		exit(0);
+		}
+		curtProcessPCB = p->curtPCB;
+		delFromReadyQueue();
+	}
+	
 }
 
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
@@ -210,6 +242,7 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 	}*/
 	//Add curt PCB to PCB queue
 	curtPCB = addToPCBQueue(&pcb);
+	//add the pcb in pcb queue to readyQ
 	addToReadyQueue(curtPCB);
 }
 
