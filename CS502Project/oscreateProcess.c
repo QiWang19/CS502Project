@@ -13,6 +13,9 @@ struct PCB_Queue* rearPCB = NULL;
 //Timer Queue
 struct timer_Queue* headTimer = NULL;
 struct timer_Queue* rearTimer = NULL;
+//Ready Queue
+struct Ready_Queue* headReadyQ = NULL;
+struct Ready_Queue* rearReadyQ = NULL;
 //PID
 long PID = 7;
 //PCB_Queue length
@@ -24,6 +27,20 @@ struct PCB_Queue* curtProcessPCB = NULL;
 //	struct Process_PCB pcb;
 //
 //};
+void addToPCBQueue(struct Process_PCB* pcb) {
+	struct PCB_Queue* curtPCB;
+	curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
+	curtPCB->pcb = *pcb;
+	curtPCB->next = NULL;
+	if (headPCB == NULL && rearPCB == NULL) {
+		headPCB = rearPCB = curtPCB;
+	}
+	else {
+		rearPCB->next = curtPCB;
+		rearPCB = curtPCB;
+	}
+	lenPCBQ = lenPCBQ + 1;
+}
 
 void os_create_process(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;
@@ -138,6 +155,24 @@ void delFromTimerQueue() {
 	free(p);	//p is the PCB has been deleted
 }
 
+void addToReadyQueue(struct PCB_Queue* curtPCB)
+{
+	struct Ready_Queue* newPCB = (struct Ready_Queue*)malloc(sizeof(struct Ready_Queue));
+	newPCB->curtPCB = curtPCB;
+	newPCB->next = NULL;
+	if (headReadyQ == NULL && rearReadyQ == NULL) {
+		headReadyQ = rearReadyQ = newPCB;
+	}
+	else {
+		rearReadyQ->next = newPCB;
+		rearReadyQ = newPCB;
+	}
+}
+
+void delFromReadyQueue()
+{
+}
+
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;
 	struct Process_PCB pcb;
@@ -172,7 +207,7 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 		exit(0);
 	}*/
 	//Add curt PCB to PCB queue
-	curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
+	/*curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
 	curtPCB->pcb = pcb;
 	curtPCB->next = NULL;
 	if (headPCB == NULL && rearPCB == NULL) {
@@ -182,6 +217,7 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 		rearPCB->next = curtPCB;
 		rearPCB = curtPCB;
 	}
-	lenPCBQ = lenPCBQ + 1;
+	lenPCBQ = lenPCBQ + 1;*/
+	addToPCBQueue(&pcb);
 }
 
