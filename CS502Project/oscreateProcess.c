@@ -207,17 +207,6 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 		exit(0);
 	}*/
 	//Add curt PCB to PCB queue
-	/*curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
-	curtPCB->pcb = pcb;
-	curtPCB->next = NULL;
-	if (headPCB == NULL && rearPCB == NULL) {
-		headPCB = rearPCB = curtPCB;
-	}
-	else {
-		rearPCB->next = curtPCB;
-		rearPCB = curtPCB;
-	}
-	lenPCBQ = lenPCBQ + 1;*/
 	addToPCBQueue(&pcb);
 }
 
