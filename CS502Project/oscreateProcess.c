@@ -27,7 +27,8 @@ struct PCB_Queue* curtProcessPCB = NULL;
 //	struct Process_PCB pcb;
 //
 //};
-void addToPCBQueue(struct Process_PCB* pcb) {
+//return the pointer to PCBQ element of the pcb just be added
+struct PCB_Queue* addToPCBQueue(struct Process_PCB* pcb) {
 	struct PCB_Queue* curtPCB;
 	curtPCB = (struct PCB_Queue*)malloc(sizeof(struct PCB_Queue));
 	curtPCB->pcb = *pcb;
@@ -40,6 +41,7 @@ void addToPCBQueue(struct Process_PCB* pcb) {
 		rearPCB = curtPCB;
 	}
 	lenPCBQ = lenPCBQ + 1;
+	return curtPCB;
 }
 
 void os_create_process(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
@@ -176,7 +178,7 @@ void delFromReadyQueue()
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;
 	struct Process_PCB pcb;
-	struct PCB_Queue* curtPCB;
+	struct PCB_Queue* curtPCB;			//return value after add to pcb queue
 	void *PageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
 	pcb.PageTable = PageTable;
 	pcb.process_ID = PID + 1;
@@ -207,6 +209,7 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 		exit(0);
 	}*/
 	//Add curt PCB to PCB queue
-	addToPCBQueue(&pcb);
+	curtPCB = addToPCBQueue(&pcb);
+	addToReadyQueue(curtPCB);
 }
 
