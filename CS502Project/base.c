@@ -196,16 +196,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			//For idle
 			mmio1.Mode = Z502Action;
 			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
-			//Get timer status
-			mmio.Mode = Z502Status;
-			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
-			MEM_READ(Z502Timer, &mmio);
-			Status = mmio.Field1;		
-			
-			MEM_WRITE(Z502Idle, &mmio1);
-			/*while (flag != 1) {
-				flag = isDelFromTimerQueue();
-			}*/
+			MEM_WRITE(Z502Idle, &mmio1);			
 			dispatcher();
 			break;
 		case SYSNUM_GET_PROCESS_ID:
@@ -227,31 +218,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 					*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
 				}
 			}
-			//else {
-			//	pName = (char*)SystemCallData->Argument[0];
-			//	pID = *(long*)SystemCallData->Argument[1];
-			//	while (p != NULL) {
-			//		if (strcmp(p->pcb.process_Name, pName) == 0 || p->pcb.process_ID == pID) {
-			//			break;
-			//		}
-			//		else {
-			//			p = p->next;
-			//		}
-			//	}
-			//	if (p == NULL) {
-			//		printf("ERROR!\n");
-			//	}
-			//	else if (strcmp(p->pcb.process_Name, pName) == 0 && p->pcb.process_ID == pID) {		//find the process
-			//		*(long*)SystemCallData->Argument[1] = p->pcb.process_ID;
-			//		*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
-			//	}
-			//	else if (strcmp(p->pcb.process_Name, pName) != 0) {
-			//		printf("Illegal ProcessName\n");
-			//	}
-			//	else if (p->pcb.process_ID != pID) {
-			//		printf("Process does not exist\n");
-			//	}
-			//}
+			
 			break;
 		case SYSNUM_PHYSICAL_DISK_WRITE:
 			mmio.Mode = Z502DiskWrite;
@@ -332,8 +299,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			MEM_READ(Z502Disk, &mmio);
 			break;
 		case SYSNUM_CREATE_PROCESS:
-			pName = (char*)SystemCallData->Argument[0];
-			
+			pName = (char*)SystemCallData->Argument[0];			
 			pPriority = (long)SystemCallData->Argument[2];
 			
 			//Get number of process
@@ -370,6 +336,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
+			break;
 	}
 }                                               // End of svc
 
@@ -451,8 +418,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test3;
-		testName = "test3";
+		testAddress = (long)test1;
+		testName = "test1";
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
