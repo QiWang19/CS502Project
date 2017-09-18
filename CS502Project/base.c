@@ -24,6 +24,7 @@ Default program start is in test0.
 ************************************************************************/
 
 #include			"oscreateProcess.h"
+#include			"disk.h"
 #include             "global.h"
 #include             "syscalls.h"
 #include             "protos.h"
@@ -418,8 +419,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test1;
-		testName = "test1";
+		testAddress = (long)test3;
+		testName = "test3";
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;

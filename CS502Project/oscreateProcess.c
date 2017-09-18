@@ -185,10 +185,11 @@ void delFromReadyQueue()
 void dispatcher() {
 	struct Ready_Queue* p = headReadyQ;
 	MEMORY_MAPPED_IO mmio;
+	char fff = 'a';
 	//syscalls.h line 88
 	if (headReadyQ == NULL) {
 		while (headReadyQ == NULL) {
-				CALL();
+			CALL(fff);
 			}
 	}
 	if (headReadyQ != NULL && p != NULL) {
@@ -207,7 +208,13 @@ void dispatcher() {
 	
 }
 
+void updateTimerQueue() {
+	//Get current time from clock
+	
+	//traverse the timer queue
 
+	//delete the timer or leave it
+}
 
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;

@@ -35,3 +35,5 @@ void addToReadyQueue(struct PCB_Queue* curtPCB);
 void delFromReadyQueue();
 //dispatcher
 void dispatcher();
+//decide the timer in timerQ
+void updateTimerQueue();
