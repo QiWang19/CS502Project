@@ -24,7 +24,7 @@ struct Ready_Queue {
 	struct PCB_Queue* curtPCB;
 	struct Ready_Queue* next;
 };
-
+struct PCB_Queue* addToPCBQueue(struct Process_PCB* pcb);
 void os_create_process(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned);
 //TODO: add according to the endTime comparision
 void addToTimerQueue(long sleepTime);
