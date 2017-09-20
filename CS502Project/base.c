@@ -40,6 +40,7 @@ extern void *TO_VECTOR[];
 extern struct PCB_Queue* headPCB;
 extern struct timer_Queue* headTimer;
 extern long lenPCBQ;
+extern long exitInterrupt;
 
 char *call_names[] = { "mem_read ", "mem_write", "read_mod ", "get_time ",
 "sleep    ", "get_pid  ", "create   ", "term_proc", "suspend  ",
@@ -64,7 +65,7 @@ void InterruptHandler(void) {
 	
 	//variables
 	struct PCB_Queue* deletedTimerPCB;			//the pointer to the pcb just del from timerQ
-
+	exitInterrupt = 1;
 												 // Get cause of interrupt
 	mmio.Mode = Z502GetInterruptInfo;
 	mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
@@ -83,8 +84,10 @@ void InterruptHandler(void) {
 	{
 	case TIMER_INTERRUPT:
 		
-		deletedTimerPCB = delFromTimerQueue();
-		addToReadyQueue(deletedTimerPCB);
+		//deletedTimerPCB = delFromTimerQueue();
+		//printf("========================%ld\n", deletedTimerPCB->pcb.NewContext);
+		//addToReadyQueue(deletedTimerPCB);
+		updateTimerQueue();
 		break;
 	case DISK_INTERRUPT_DISK0:
 		
@@ -95,7 +98,7 @@ void InterruptHandler(void) {
 		
 		break;
 	}
-	
+	exitInterrupt = 0;
 	
 	
 	/** REMOVE THE NEXT SIX LINES **/
@@ -180,9 +183,10 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			break;
 		//terminate system call
 		case SYSNUM_TERMINATE_PROCESS:
-			mmio.Mode = Z502Action;
+			endProcess((int)SystemCallData->Argument[0], SystemCallData->Argument[1]);
+			/*mmio.Mode = Z502Action;
 			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
-			MEM_WRITE(Z502Halt, &mmio);
+			MEM_WRITE(Z502Halt, &mmio);*/
 			break;
 		case SYSNUM_SLEEP:
 			//Start the timer
@@ -219,7 +223,41 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 					*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
 				}
 			}
-			
+			else {
+				pName = (char*)SystemCallData->Argument[0];
+				pID = *(long*)SystemCallData->Argument[1];
+				while (p != NULL) {
+					if (strcmp(p->pcb.process_Name, pName) == 0 || p->pcb.process_ID == pID) {
+						break;
+					}
+					else {
+						p = p->next;
+					}
+				}
+				if (p == NULL) {
+					*(long*)SystemCallData->Argument[2] = ERR_BAD_PARAM;
+					printf("ERROR!\n");
+
+				}
+				else if (strcmp(p->pcb.process_Name, pName) == 0 ) {		//find the process
+					*(long*)SystemCallData->Argument[1] = p->pcb.process_ID;
+					if (p->pcb.NewContext == -1) {
+						*(long*)SystemCallData->Argument[2] = ERR_BAD_PARAM;
+					}
+					else {
+						*(long*)SystemCallData->Argument[2] = ERR_SUCCESS;
+					}
+					
+				}
+				else if (strcmp(p->pcb.process_Name, pName) != 0) {
+					*(long*)SystemCallData->Argument[2] = ERR_BAD_PARAM;
+					printf("Illegal ProcessName\n");
+				}
+				else if (p->pcb.process_ID != pID) {
+					*(long*)SystemCallData->Argument[2] = ERR_BAD_PARAM;
+					printf("Process does not exist\n");
+				}
+			}
 			break;
 		case SYSNUM_PHYSICAL_DISK_WRITE:
 			mmio.Mode = Z502DiskWrite;

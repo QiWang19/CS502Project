@@ -314,6 +314,7 @@ void test4(void) {
 	ErrorReturned = ERR_SUCCESS;
 	while (ErrorReturned == ERR_SUCCESS) {
 		SLEEP(SleepTime);
+		//printf("===================TEST4============================\n");
 		GET_PROCESS_ID("testX", &ProcessID, &ErrorReturned);
 	}
 	GET_TIME_OF_DAY(&CurrentTime);
@@ -1042,6 +1043,7 @@ void testX(void) {
 			(int)(EndingTime - RandomSeed));
 	}
 	printf("Test X, PID %2ld, Ends at Time %ld\n", OurProcessID, EndingTime);
+
 
 	TERMINATE_PROCESS(-1, &ErrorReturned);
 	printf("ERROR: TestX should be terminated but isn't.\n");

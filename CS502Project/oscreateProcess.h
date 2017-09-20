@@ -37,3 +37,5 @@ void delFromReadyQueue();
 void dispatcher();
 //decide the timer in timerQ
 void updateTimerQueue();
+//terminate sys call
+void endProcess(int type, long* ErrorReturned);

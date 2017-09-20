@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClInclude Include="disk.h" />
     <ClInclude Include="global.h" />
+    <ClInclude Include="lock.h" />
     <ClInclude Include="oscreateProcess.h" />
     <ClInclude Include="protos.h" />
     <ClInclude Include="studentConfiguration.h" />
