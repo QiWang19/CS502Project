@@ -39,3 +39,5 @@ void dispatcher();
 void updateTimerQueue();
 //terminate sys call
 void endProcess(int type, long* ErrorReturned);
+//scheduler printer 
+void printScheduler(int printFullScheduler, char* targetAction, long targetPID);

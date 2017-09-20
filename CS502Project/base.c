@@ -41,6 +41,7 @@ extern struct PCB_Queue* headPCB;
 extern struct timer_Queue* headTimer;
 extern long lenPCBQ;
 extern long exitInterrupt;
+extern int printFullScheduler;
 
 char *call_names[] = { "mem_read ", "mem_write", "read_mod ", "get_time ",
 "sleep    ", "get_pid  ", "create   ", "term_proc", "suspend  ",
@@ -457,8 +458,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test3;
-		testName = "test3";
+		testAddress = (long)test4;
+		testName = "test4";
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;

@@ -30,7 +30,7 @@ struct PCB_Queue* curtProcessPCB = NULL;
 //
 long exitInterrupt = 0;
 //scheduler print
-BOOL printFullScheduler = TRUE;
+int printFullScheduler = 1;
 
 //struct OS_Structures {
 //	struct Process_PCB pcb;
@@ -389,6 +389,49 @@ void endProcess(int type, long * ErrorReturned)
 
 }
 
+
+
+void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
+{
+	if (printFullScheduler == 0) {
+		return;
+	}
+	//variables
+	//tarverse for ProcSuspendedProcessPIDs
+	int i = 0;
+	struct Ready_Queue* p = headReadyQ;
+	//tarverse for TimerSuspendedProcessPIDs
+	int j = 0;
+	struct timer_Queue* q = headTimer;
+
+	SP_INPUT_DATA SPData;
+	memset(&SPData, 0, sizeof(SP_INPUT_DATA));
+	strcpy(SPData.TargetAction, targetAction);
+
+	SPData.CurrentlyRunningPID = curtProcessPCB->pcb.process_ID;
+	SPData.TargetPID = targetPID;
+
+	SPData.NumberOfReadyProcesses = lenReadyQ;
+	i = 0;
+	p = headReadyQ;
+	while (p != NULL && i < SPData.NumberOfReadyProcesses) {
+		SPData.ReadyProcessPIDs[i] = p->curtPCB->pcb.process_ID;
+		i = i + 1;
+		p = p->next;
+	}
+
+	SPData.NumberOfTimerSuspendedProcesses = lenTimerQ;
+	j = 0;
+	q = headTimer;
+	while (q != NULL && j < SPData.NumberOfTimerSuspendedProcesses)
+	{
+		SPData.TimerSuspendedProcessPIDs[j] = q->curtPCB->pcb.process_ID;
+		j = j + 1;
+		q = q->next;
+	}
+	CALL(SPPrintLine(&SPData));
+}
+
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;
 	struct Process_PCB pcb;
@@ -397,6 +440,10 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 	pcb.PageTable = PageTable;
 	pcb.process_ID = PID + 1;
 	PID = PID + 1;
+	
+	//scheduler printer
+	printScheduler(1, "create", PID);
+
 
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
