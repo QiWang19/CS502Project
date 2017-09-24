@@ -30,7 +30,7 @@ struct PCB_Queue* curtProcessPCB = NULL;
 //
 long exitInterrupt = 0;
 //scheduler print
-int printFullScheduler = 1;
+int printFullScheduler = 0;
 
 //struct OS_Structures {
 //	struct Process_PCB pcb;
@@ -253,6 +253,7 @@ void dispatcher() {
 	long testQlen = lenReadyQ;
 
 	p = headReadyQ;
+	printScheduler(printFullScheduler, "Dispatch", p->curtPCB->pcb.process_ID);	
 	if (headReadyQ != NULL && p != NULL) {
 		delFromReadyQueue();
 		mmio.Mode = Z502StartContext;
@@ -409,6 +410,10 @@ void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
 	strcpy(SPData.TargetAction, targetAction);
 
 	SPData.CurrentlyRunningPID = curtProcessPCB->pcb.process_ID;
+	
+	/*if (strcmp(targetAction, "create") == 0) {
+
+	}*/
 	SPData.TargetPID = targetPID;
 
 	SPData.NumberOfReadyProcesses = lenReadyQ;
@@ -442,7 +447,7 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 	PID = PID + 1;
 	
 	//scheduler printer
-	printScheduler(1, "create", PID);
+	printScheduler(printFullScheduler, "create", PID);
 
 
 	mmio.Mode = Z502InitializeContext;
