@@ -6,4 +6,5 @@ struct Disk_Queue{
 };
 
 void addToDiskQueue();
-void delFromDiskQueue();
+struct PCB_Queue* delFromDiskQueue();
+void updateDiskQueue();

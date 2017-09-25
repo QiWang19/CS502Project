@@ -80,6 +80,10 @@ void InterruptHandler(void) {
 			"The InterruptDevice call in the InterruptHandler has failed.\n");
 		printf("The DeviceId and Status that were returned are not valid.\n");
 	}
+
+	if (DeviceID >= DISK_INTERRUPT_DISK0 && DeviceID <= DISK_INTERRUPT_DISK7) {
+		updateDiskQueue();
+	}
 	
 	switch (DeviceID)
 	{
@@ -90,11 +94,15 @@ void InterruptHandler(void) {
 		//addToReadyQueue(deletedTimerPCB);
 		updateTimerQueue();
 		break;
-	case DISK_INTERRUPT_DISK0:
-		
-		//TODO:
-		delFromDiskQueue();
-		break;
+	
+	//case DISK_INTERRUPT:
+	//	
+	//	//TODO:
+	//	updateDiskQueue();
+	//	break;
+	//case DISK_INTERRUPT_DISK1:
+	//	updateDiskQueue();
+	//	break;
 	default:
 		
 		break;
@@ -272,8 +280,9 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio1.Mode = Z502Action;
 			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
 			MEM_WRITE(Z502Idle, &mmio1);
+			dispatcher();
 			//Make sure that disk is running
-			mmio1.Mode = Z502Status;
+			/*mmio1.Mode = Z502Status;
 			mmio1.Field1 = (long)SystemCallData->Argument[0];
 			mmio1.Field2 = mmio1.Field3 = 0;
 			MEM_READ(Z502Disk, &mmio1);
@@ -288,7 +297,8 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			}
 			else {
 				printf("Got erroneous result for Disk Status - Device is free.\n");
-			}
+			}*/
+			
 			break;
 		case SYSNUM_PHYSICAL_DISK_READ:
 			//Make sure the disk is free
@@ -316,8 +326,9 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			mmio1.Mode = Z502Action;
 			mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
 			MEM_WRITE(Z502Idle, &mmio1);
+			dispatcher();
 			//Wait for the disk action to complete
-			mmio1.Mode = Z502Status;
+			/*mmio1.Mode = Z502Status;
 			mmio1.Field1 = (long)SystemCallData->Argument[0];
 			mmio1.Field2 = mmio1.Field3 = 0;
 			MEM_READ(Z502Disk, &mmio1);
@@ -329,8 +340,8 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 					mmio1.Field2 = mmio1.Field3 = 0;
 					MEM_READ(Z502Disk, &mmio1);
 				}
-			}
-			
+			}*/
+			//dispatcher();
 			break;
 		case SYSNUM_CHECK_DISK:
 			mmio.Mode = Z502CheckDisk;
@@ -458,9 +469,9 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test4;
-		testName = "test4";
-		printFullScheduler = 1;
+		testAddress = (long)test5;
+		testName = "test5";
+		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
@@ -477,6 +488,11 @@ void osInit(int argc, char *argv[]) {
 	}
 	else if (strcmp(argv[1], "test4") == 0) {
 		testAddress = (long)test4;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 1;
+	}
+	else if (strcmp(argv[1], "test5") == 0) {
+		testAddress = (long)test5;
 		strcpy(testName, argv[1]);
 		printFullScheduler = 1;
 	}

@@ -336,7 +336,7 @@ void endProcess(int type, long * ErrorReturned)
 	MEMORY_MAPPED_IO mmio;
 	struct PCB_Queue* p = curtProcessPCB;
 	struct PCB_Queue* q = headPCB;
-	if (type == -1) {
+	if (type == -1) {				//stop the current process and dispatch
 		curtProcessPCB->pcb.NewContext = -1;
 		//lenPCBQ = lenPCBQ - 1;
 		if (lenPCBQ >= 2) {
@@ -369,7 +369,7 @@ void endProcess(int type, long * ErrorReturned)
 		mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
 		MEM_WRITE(Z502Halt, &mmio);
 	}
-	else {
+	else {										//stop the process with the PID
 		q = headPCB;
 		while (q != NULL && q->pcb.process_ID != type) {
 			q = q->next;

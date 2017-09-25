@@ -1,4 +1,5 @@
 #include			"disk.h"
+#include			"oscreateProcess.h"
 #include			 "stdio.h"
 #include             "global.h"
 #include             "syscalls.h"
@@ -11,6 +12,7 @@
 struct Disk_Queue* headDisk = NULL;
 struct Disk_Queue* rearDisk = NULL;
 extern struct PCB_Queue* curtProcessPCB;
+extern long exitInterrupt;
 
 void addToDiskQueue() {
 	struct Disk_Queue* newDisk;
@@ -26,11 +28,22 @@ void addToDiskQueue() {
 	}
 }
 
-void delFromDiskQueue() {
+struct PCB_Queue* delFromDiskQueue() {
 	struct Disk_Queue* p = headDisk;
 	if (headDisk != NULL) {
 		headDisk = headDisk->next;
+		if (headDisk == NULL) {
+			rearDisk = NULL;
+		}
+		return p->curtPCB;
 	}
-	free(p);
+	return NULL;
+}
+
+void updateDiskQueue() {
+	exitInterrupt = 0;
+	struct PCB_Queue* p = delFromDiskQueue();
+	addToReadyQueue(p);
+	exitInterrupt = 1;
 }
 

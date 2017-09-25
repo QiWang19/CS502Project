@@ -153,6 +153,12 @@ or fault occurs.  Further explanation can be found in Appendix A
 #define         DISK_INTERRUPT                  (short)5
 #define         DISK_INTERRUPT_DISK0            (short)5
 #define         DISK_INTERRUPT_DISK1            (short)6
+#define         DISK_INTERRUPT_DISK2            (short)7
+#define         DISK_INTERRUPT_DISK3            (short)8
+#define         DISK_INTERRUPT_DISK4            (short)9
+#define         DISK_INTERRUPT_DISK5            (short)10
+#define         DISK_INTERRUPT_DISK6            (short)11
+#define         DISK_INTERRUPT_DISK7            (short)12
 //      ... we could define other explicit disk names here
 
 #define         LARGEST_STAT_VECTOR_INDEX       DISK_INTERRUPT + \
