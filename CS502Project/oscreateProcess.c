@@ -25,12 +25,13 @@ long lenPCBQ = 0;
 long lenTimerQ = 0;
 //readyQ length
 long lenReadyQ = 0;
-//TODO:
+//current running process 
 struct PCB_Queue* curtProcessPCB = NULL;
 //
 long exitInterrupt = 0;
-//scheduler print
-int printFullScheduler = 0;
+
+//scheduler print in printScheduler.c
+extern int printFullScheduler;
 
 //struct OS_Structures {
 //	struct Process_PCB pcb;
@@ -392,50 +393,50 @@ void endProcess(int type, long * ErrorReturned)
 
 
 
-void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
-{
-	if (printFullScheduler == 0) {
-		return;
-	}
-	//variables
-	//tarverse for ProcSuspendedProcessPIDs
-	int i = 0;
-	struct Ready_Queue* p = headReadyQ;
-	//tarverse for TimerSuspendedProcessPIDs
-	int j = 0;
-	struct timer_Queue* q = headTimer;
-
-	SP_INPUT_DATA SPData;
-	memset(&SPData, 0, sizeof(SP_INPUT_DATA));
-	strcpy(SPData.TargetAction, targetAction);
-
-	SPData.CurrentlyRunningPID = curtProcessPCB->pcb.process_ID;
-	
-	/*if (strcmp(targetAction, "create") == 0) {
-
-	}*/
-	SPData.TargetPID = targetPID;
-
-	SPData.NumberOfReadyProcesses = lenReadyQ;
-	i = 0;
-	p = headReadyQ;
-	while (p != NULL && i < SPData.NumberOfReadyProcesses) {
-		SPData.ReadyProcessPIDs[i] = p->curtPCB->pcb.process_ID;
-		i = i + 1;
-		p = p->next;
-	}
-
-	SPData.NumberOfTimerSuspendedProcesses = lenTimerQ;
-	j = 0;
-	q = headTimer;
-	while (q != NULL && j < SPData.NumberOfTimerSuspendedProcesses)
-	{
-		SPData.TimerSuspendedProcessPIDs[j] = q->curtPCB->pcb.process_ID;
-		j = j + 1;
-		q = q->next;
-	}
-	CALL(SPPrintLine(&SPData));
-}
+//void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
+//{
+//	if (printFullScheduler == 0) {
+//		return;
+//	}
+//	//variables
+//	//tarverse for NumberOfReadyProcesses
+//	int i = 0;
+//	struct Ready_Queue* p = headReadyQ;
+//	//tarverse for TimerSuspendedProcessPIDs
+//	int j = 0;
+//	struct timer_Queue* q = headTimer;
+//
+//	SP_INPUT_DATA SPData;
+//	memset(&SPData, 0, sizeof(SP_INPUT_DATA));
+//	strcpy(SPData.TargetAction, targetAction);
+//
+//	SPData.CurrentlyRunningPID = curtProcessPCB->pcb.process_ID;
+//	
+//	/*if (strcmp(targetAction, "create") == 0) {
+//
+//	}*/
+//	SPData.TargetPID = targetPID;
+//
+//	SPData.NumberOfReadyProcesses = lenReadyQ;
+//	i = 0;
+//	p = headReadyQ;
+//	while (p != NULL && i < SPData.NumberOfReadyProcesses) {
+//		SPData.ReadyProcessPIDs[i] = p->curtPCB->pcb.process_ID;
+//		i = i + 1;
+//		p = p->next;
+//	}
+//
+//	SPData.NumberOfTimerSuspendedProcesses = lenTimerQ;
+//	j = 0;
+//	q = headTimer;
+//	while (q != NULL && j < SPData.NumberOfTimerSuspendedProcesses)
+//	{
+//		SPData.TimerSuspendedProcessPIDs[j] = q->curtPCB->pcb.process_ID;
+//		j = j + 1;
+//		q = q->next;
+//	}
+//	CALL(SPPrintLine(&SPData));
+//}
 
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;

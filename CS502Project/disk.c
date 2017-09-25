@@ -11,6 +11,8 @@
 //Global variables
 struct Disk_Queue* headDisk = NULL;
 struct Disk_Queue* rearDisk = NULL;
+long lenDiskQ = 0;
+//in oscreateprocess.c
 extern struct PCB_Queue* curtProcessPCB;
 extern long exitInterrupt;
 
@@ -21,10 +23,12 @@ void addToDiskQueue() {
 	newDisk->next = NULL;
 	if (headDisk == NULL && rearDisk == NULL) {
 		headDisk = rearDisk = newDisk;
+		lenDiskQ = lenDiskQ + 1;
 	}
 	else {
 		rearDisk->next = newDisk;
 		rearDisk = newDisk;
+		lenDiskQ = lenDiskQ + 1;
 	}
 }
 
@@ -32,6 +36,7 @@ struct PCB_Queue* delFromDiskQueue() {
 	struct Disk_Queue* p = headDisk;
 	if (headDisk != NULL) {
 		headDisk = headDisk->next;
+		lenDiskQ = lenDiskQ - 1;
 		if (headDisk == NULL) {
 			rearDisk = NULL;
 		}

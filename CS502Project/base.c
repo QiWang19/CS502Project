@@ -41,6 +41,7 @@ extern struct PCB_Queue* headPCB;
 extern struct timer_Queue* headTimer;
 extern long lenPCBQ;
 extern long exitInterrupt;
+//print.c
 extern int printFullScheduler;
 
 char *call_names[] = { "mem_read ", "mem_write", "read_mod ", "get_time ",
@@ -260,7 +261,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 				}
 				else if (strcmp(p->pcb.process_Name, pName) != 0) {
 					*(long*)SystemCallData->Argument[2] = ERR_BAD_PARAM;
-					printf("Illegal ProcessName\n");
+					//printf("Illegal ProcessName\n");
 				}
 				else if (p->pcb.process_ID != pID) {
 					*(long*)SystemCallData->Argument[2] = ERR_BAD_PARAM;
@@ -469,9 +470,9 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test5;
-		testName = "test5";
-		printFullScheduler = 0;
+		testAddress = (long)test8;
+		testName = "test8";
+		printFullScheduler = 1;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
@@ -493,6 +494,21 @@ void osInit(int argc, char *argv[]) {
 	}
 	else if (strcmp(argv[1], "test5") == 0) {
 		testAddress = (long)test5;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 1;
+	}
+	else if (strcmp(argv[1], "test6") == 0) {
+		testAddress = (long)test6;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 1;
+	}
+	else if (strcmp(argv[1], "test7") == 0) {
+		testAddress = (long)test7;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 1;
+	}
+	else if (strcmp(argv[1], "test8") == 0) {
+		testAddress = (long)test8;
 		strcpy(testName, argv[1]);
 		printFullScheduler = 1;
 	}

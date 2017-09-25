@@ -115,6 +115,7 @@
     <ClCompile Include="base.c" />
     <ClCompile Include="disk.c" />
     <ClCompile Include="oscreateProcess.c" />
+    <ClCompile Include="printScheduler.c" />
     <ClCompile Include="sample.c" />
     <ClCompile Include="statePrinter.c" />
     <ClCompile Include="test.c" />
@@ -125,6 +126,7 @@
     <ClInclude Include="global.h" />
     <ClInclude Include="lock.h" />
     <ClInclude Include="oscreateProcess.h" />
+    <ClInclude Include="printFullScheduler.h" />
     <ClInclude Include="protos.h" />
     <ClInclude Include="studentConfiguration.h" />
     <ClInclude Include="syscalls.h" />

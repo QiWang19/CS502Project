@@ -36,6 +36,9 @@
     <ClCompile Include="disk.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="printScheduler.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="studentConfiguration.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="printFullScheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
