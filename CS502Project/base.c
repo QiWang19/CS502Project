@@ -519,6 +519,11 @@ void osInit(int argc, char *argv[]) {
 		strcpy(testName, argv[1]);
 		printFullScheduler = 1;
 	}
+	else if (strcmp(argv[1], "test9") == 0) {
+		testAddress = (long)test9;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 0;
+	}
 	
 	os_create_process(testName, testAddress, 10, &newProcessID, &ErrorReturned);
 /*
