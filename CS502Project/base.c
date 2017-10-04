@@ -23,8 +23,9 @@ Default program start is in test0.
 4.20 Jan     2015: Thread safe code - prepare for multiprocessors
 ************************************************************************/
 
-#include			"oscreateProcess.h"
-#include			"disk.h"
+#include			 "oscreateProcess.h"
+#include			 "disk.h"
+#include			 "file.h"
 #include             "global.h"
 #include             "syscalls.h"
 #include             "protos.h"
@@ -171,6 +172,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	BOOL duplicateName = FALSE;			//The process of the same name has been created
 	long res;			//the result of create process
 	long sleepTime;		//sleep time in sleep system call
+
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
 		printf("SVC handler: %s\n", call_names[call_type]);
@@ -385,6 +387,11 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			*(long*)SystemCallData->Argument[3] = pID;
 			*(long*)SystemCallData->Argument[4] = res;
 			break;
+		case SYSNUM_FORMAT:
+			//diskID to be format (long)SystemCallData->Argument[0]
+			//error SystemCallData->Argument[1]
+			formatDisk((long)SystemCallData->Argument[0], SystemCallData->Argument[1]);
+			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
@@ -470,8 +477,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test8;
-		testName = "test8";
+		testAddress = (long)test9;
+		testName = "test9";
 		printFullScheduler = 1;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
