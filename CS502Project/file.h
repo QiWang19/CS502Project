@@ -1,4 +1,5 @@
 
+
 #define		SECTORSIZE                           (short)16
 #define		BITMAPSIZE							 (short)4
 #define		ROOTDIRHEADER						 (short)1
@@ -7,7 +8,10 @@
 #define		ROOTINDEXLOCATION					 (short)18
 #define		SWAPLOCATION						 (short)19
 #define		BITMAPLOCATION						 (short)1
+#define		FREESECTORLOCATION					 (short)31
 
+#ifndef _COMMON
+#define _COMMON
 
 struct sector0 {
 	char DiskID;
@@ -45,6 +49,8 @@ union indexSectorData {
 	unsigned short index_sector_data[8];
 };
 
+#endif
+
 void initSector0(long DiskID, long* result);
 void initBitMap(long DiskID, short bitMapLocation, short bitMapSize);
 void writeBitmapToDisk(long DiskID);
@@ -55,3 +61,8 @@ void initRootDir(long DiskID, short rootDirLocation, short rootHeaderSize);
 void writeRootDirToDisk(long DiskID, short rootDirLocation, union diskHeaderData* disk_header_data);
 void writeIndexSectorToDisk(long DiskID, short rootIndexLocation, union indexSectorData* index_sector_data);
 void formatDisk(long DiskID, long* ErrorReturned);
+void openDirectory(long DiskID, char* dirName, long* ErrorReturned);
+void getIndexSectorData(long curtDiskID, short indexLocation, union indexSectorData* indexSecData);
+void createDirectory(char* newDirName, long* ErrorReturned);
+void readFromDisk(long DiskID, short sectorToRead, char* readBuffer);
+short findEmptySector(long DiskID, short startSectortoFind);

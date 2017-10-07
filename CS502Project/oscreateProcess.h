@@ -1,3 +1,5 @@
+#include				"file.h"
+
 struct Process_PCB
 {
 	long process_ID;
@@ -5,6 +7,7 @@ struct Process_PCB
 	void *PageTable;
 	char* process_Name ;
 	long processPriority;
+	struct diskHeader curtDir;
 };
 
 struct PCB_Queue

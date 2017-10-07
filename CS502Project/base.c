@@ -392,6 +392,22 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			//error SystemCallData->Argument[1]
 			formatDisk((long)SystemCallData->Argument[0], SystemCallData->Argument[1]);
 			break;
+		case SYSNUM_OPEN_DIR:
+			//diskID to open (long)SystemCallData->Argument[0]
+			//directory name (char*)SystemCallData->Argument[1]
+			//error SystemCallData->Argument[2]
+			openDirectory((long)SystemCallData->Argument[0], (char*)SystemCallData->Argument[1], SystemCallData->Argument[2]);
+			break;
+		case SYSNUM_CREATE_DIR:
+			//Dir name to create (char*)SystemCallData->Argument[0]
+			//Error message SystemCallData->Argument[1]
+			createDirectory((char*)SystemCallData->Argument[0], SystemCallData->Argument[1]);
+			break;
+		case SYSNUM_CREATE_FILE:
+			//file name to create (char*)SystemCallData->Argument[0]
+			//ErrorReturned SystemCallData->Argument[1]
+
+			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
@@ -477,9 +493,9 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test9;
-		testName = "test9";
-		printFullScheduler = 1;
+		testAddress = (long)test10;
+		testName = "test10";
+		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
 		testAddress = (long)test1;
