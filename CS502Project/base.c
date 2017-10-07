@@ -217,7 +217,8 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			dispatcher();
 			break;
 		case SYSNUM_GET_PROCESS_ID:
-			if (*(long*)SystemCallData->Argument[0] == *(long*)("")) {
+			//if (*(long*)SystemCallData->Argument[0] == *(long*)("")) {
+			if (strcmp((char*)SystemCallData->Argument[0], "") == 0) {
 				mmio.Mode = Z502GetCurrentContext;
 				mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
 				MEM_READ(Z502Context, &mmio);
@@ -406,7 +407,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 		case SYSNUM_CREATE_FILE:
 			//file name to create (char*)SystemCallData->Argument[0]
 			//ErrorReturned SystemCallData->Argument[1]
-
+			createFile((char*)SystemCallData->Argument[0], SystemCallData->Argument[1]);
 			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");

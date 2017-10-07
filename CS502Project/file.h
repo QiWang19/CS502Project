@@ -66,3 +66,5 @@ void getIndexSectorData(long curtDiskID, short indexLocation, union indexSectorD
 void createDirectory(char* newDirName, long* ErrorReturned);
 void readFromDisk(long DiskID, short sectorToRead, char* readBuffer);
 short findEmptySector(long DiskID, short startSectortoFind);
+void createFile(char* newFileName, long* RrrorReturned);
+void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerData);

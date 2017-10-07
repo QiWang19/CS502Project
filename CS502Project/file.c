@@ -7,8 +7,8 @@
 extern struct PCB_Queue* curtProcessPCB;
 unsigned char diskBitMap[MAX_NUMBER_OF_DISKS][256];		//(4 * Bitmapsize) sectors * 16byte, totally 2048 bits, 2048 sectors
 union diskHeaderData diskHeader[MAX_NUMBER_OF_DISKS];	//the root dir of each disk
-long curtDiskID = 0;
-long Inode = 1;
+long curtDiskID = 0;									//defined when create directory
+long Inode = 1;											//global variable
 
 void formatDisk(long DiskID, long* ErrorReturned) {
 	if (DiskID >= MAX_NUMBER_OF_DISKS) {
@@ -132,17 +132,53 @@ void writeIndexSectorToDisk(long DiskID, short rootIndexLocation, union indexSec
 }
 
 void openDirectory(long DiskID, char* dirName, long* ErrorReturned) {
-	if (DiskID < 0 && DiskID >= MAX_NUMBER_OF_DISKS) {
+	if (DiskID < -1 || DiskID >= MAX_NUMBER_OF_DISKS) {
 		*ErrorReturned = ERR_BAD_PARAM;
 		return;
 	}
-
-	if (strcmp(dirName, "root") == 0) {			//open the root dir
+	if (DiskID != -1) {
 		curtDiskID = DiskID;
-		curtProcessPCB->pcb.curtDir = diskHeader[DiskID].diskHeader_data;
-		*ErrorReturned = ERR_SUCCESS;
 	}
 
+	if (strcmp(dirName, "root") == 0) {			//open the root dir		
+		//curtDiskID = DiskID;
+		curtProcessPCB->pcb.curtDir = diskHeader[curtDiskID].diskHeader_data;
+		*ErrorReturned = ERR_SUCCESS;
+		return;
+	}
+	if (strcmp(curtProcessPCB->pcb.curtDir.Name, dirName) == 0) {
+		*ErrorReturned = ERR_SUCCESS;
+		return;
+	}
+	unsigned char curtFileDescription = curtProcessPCB->pcb.curtDir.FileDescription;
+	int curtIndexBit = curtFileDescription & 6;
+	printf("curtIndexBit========================= %d\n", curtIndexBit);
+	union indexSectorData curtIndexSectorData;
+	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
+	int i = 0;
+	short findSectorNum = 0;
+	union diskHeaderData findHeaderData;
+	unsigned char findFileDescription;
+	if (curtIndexBit != 0) {
+		getIndexSectorData(curtDiskID, curtDirIndexLocation, &curtIndexSectorData);
+		for (i = 0; i < 8; i++) {
+			if ((curtIndexSectorData.index_sector_data[i] | 0) != 0) {
+				findSectorNum = curtIndexSectorData.index_sector_data[i];
+				getHeaderData(curtDiskID, findSectorNum, &findHeaderData);
+				findFileDescription = findHeaderData.diskHeader_data.FileDescription;
+				if ((findFileDescription & 1) == 0) {
+					continue;
+				}
+				if (strcmp(findHeaderData.diskHeader_data.Name, dirName) == 0) {
+					curtProcessPCB->pcb.curtDir = findHeaderData.diskHeader_data;
+					*ErrorReturned = ERR_SUCCESS;
+					return;
+				}
+			}
+		}
+	}
+	*ErrorReturned = ERR_BAD_PARAM;
+	return;
 }
 
 void createDirectory(char* newDirName, long* ErrorReturned) {
@@ -259,4 +295,57 @@ short findEmptySector(long DiskID, short startSectortoFind) {
 	return -1;
 }
 
-void createFile()
+void createFile(char* newFileName, long* ErrorReturned) {
+	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
+	union indexSectorData index_sector_data;
+	getIndexSectorData(curtDiskID, curtDirIndexLocation, &index_sector_data);
+	int emptySectorForFileHeader = findEmptySector(curtDiskID, FREESECTORLOCATION);
+	if (emptySectorForFileHeader == -1) {
+		*ErrorReturned = ERR_BAD_PARAM;
+		return;
+	}
+	int i = 0;
+	for (i = 0; i < 8; i++) {
+		if (index_sector_data.index_sector_data[i] == 0) {
+			index_sector_data.index_sector_data[i] = emptySectorForFileHeader;
+			break;
+		}
+	}
+	int emptySectorForNewIndexSec = findEmptySector(curtDiskID, emptySectorForFileHeader + 1);
+	if (emptySectorForNewIndexSec == -1) {
+		*ErrorReturned = ERR_BAD_PARAM;
+		return;
+	}
+	//Set new File Header
+	union diskHeaderData FCB;
+	FCB.diskHeader_data.Inode = Inode;
+	Inode = Inode + 1;
+	memset(FCB.diskHeader_data.Name, 0, 7);
+	strcpy(FCB.diskHeader_data.Name, newFileName);
+
+	unsigned char fileDiscription = 0;
+	fileDiscription = fileDiscription | (curtProcessPCB->pcb.curtDir.Inode << 3 | 2);
+	FCB.diskHeader_data.FileDescription = fileDiscription;
+
+	//get curt time
+	MEMORY_MAPPED_IO mmio;
+	mmio.Mode = Z502ReturnValue;
+	mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
+	MEM_READ(Z502Clock, &mmio);
+	memcpy(FCB.diskHeader_data.CreationTime, &mmio.Field1, 3);
+	FCB.diskHeader_data.IndexLocation = emptySectorForNewIndexSec;
+	FCB.diskHeader_data.FileSize = 0;
+	union indexSectorData newIndexSector;
+	memset(&newIndexSector, 0, sizeof(union indexSectorData));
+	//update curt index sector
+	writeIndexSectorToDisk(curtDiskID, curtDirIndexLocation, index_sector_data.char_data);
+	//write new file dir to disk
+	writeRootDirToDisk(curtDiskID, emptySectorForFileHeader, FCB.char_data);
+	//write new index sector to disk
+	writeIndexSectorToDisk(curtDiskID, emptySectorForNewIndexSec, newIndexSector.char_data);
+	*ErrorReturned = ERR_SUCCESS;
+}
+
+void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerData) {
+	readFromDisk(DiskID, sectorNum, headerData->char_data);
+}
