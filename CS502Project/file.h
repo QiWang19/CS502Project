@@ -53,6 +53,8 @@ union indexSectorData {
 
 void initSector0(long DiskID, long* result);
 void initBitMap(long DiskID, short bitMapLocation, short bitMapSize);
+void initSwapSectors(long DiskID, short swapLocation, short swapSize);
+void setSwapBitMap(long DiskID, short swapLocation, short swapSize);
 void writeBitmapToDisk(long DiskID);
 void writeToDisk(long DiskID, int sectorToWrite, char* writtenBuffer);
 void writeSector0ToDisk(long DiskID, int sectorToWrite, union diskSector0Date* disk_sector0_data);

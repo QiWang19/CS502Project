@@ -33,6 +33,7 @@ void initSector0(long DiskID, long* result) {
 	
 	initBitMap(DiskID, BITMAPLOCATION, BITMAPSIZE * 4);
 	writeBitmapToDisk(DiskID);
+	initSwapSectors(DiskID, SWAPLOCATION, SWAPSPACE * 4);
 	writeSector0ToDisk(DiskID, 0, &disk_sector0_data);
 
 	initRootDir(DiskID, ROOTDIRLOCATION, ROOTDIRHEADER);
@@ -54,7 +55,22 @@ void initBitMap(long DiskID, short bitMapLocation, short bitMapSize) {
 		diskBitMap[DiskID][secIndex] = diskBitMap[DiskID][secIndex] | (1 << offset);
 	}
 }
+void initSwapSectors(long DiskID, short swapLocation, short swapSize) {
+	setSwapBitMap(DiskID, swapLocation, swapSize);
+	writeBitmapToDisk(DiskID);
+}
 
+void setSwapBitMap(long DiskID, short swapLocation, short swapSize) {
+	int sectorStartIndex = swapLocation;
+	int sectorEndIndex = swapLocation + swapSize;
+	int index = sectorStartIndex;
+	int secIndex, offset;
+	for (index = sectorStartIndex; index < sectorEndIndex; index++) {
+		secIndex = index / 8;
+		offset = 7 - index % 8;
+		diskBitMap[DiskID][secIndex] = diskBitMap[DiskID][secIndex] | (1 << offset);
+	}
+}
 //write the content of bitmap to the bitmap sectors in the disk
 void writeBitmapToDisk(long DiskID) {
 	int bitmapSectors = 16;			//16 sectors for bitmap
