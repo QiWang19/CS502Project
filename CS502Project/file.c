@@ -168,7 +168,7 @@ void openDirectory(long DiskID, char* dirName, long* ErrorReturned) {
 	}
 	unsigned char curtFileDescription = curtProcessPCB->pcb.curtDir.FileDescription;
 	int curtIndexBit = curtFileDescription & 6;
-	printf("curtIndexBit========================= %d\n", curtIndexBit);
+	//printf("curtIndexBit========================= %d\n", curtIndexBit);
 	union indexSectorData curtIndexSectorData;
 	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
 	int i = 0;
@@ -364,4 +364,31 @@ void createFile(char* newFileName, long* ErrorReturned) {
 
 void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerData) {
 	readFromDisk(DiskID, sectorNum, headerData->char_data);
+}
+
+void openFile(char* openFileName, long* fileSector, long* ErrorReturned) {
+	//short fileSector = 0;
+	union indexSectorData curtIndexSectorData;
+	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
+	getIndexSectorData(curtDiskID, curtDirIndexLocation, &curtIndexSectorData);
+	int i = 0;
+	short findSectorNum = 0;
+	union diskHeaderData findHeaderData;
+	unsigned char findFileDescription;
+	for (i = 0; i < 8; i++) {
+		if (curtIndexSectorData.index_sector_data[i] != 0) {
+			findSectorNum = curtIndexSectorData.index_sector_data[i];
+			getHeaderData(curtDiskID, findSectorNum, &findHeaderData);
+			findFileDescription = findHeaderData.diskHeader_data.FileDescription;
+			if ((findFileDescription & 1) == 1) {			//is directory not file
+				continue;
+			}
+			if (strcmp(findHeaderData.diskHeader_data.Name, openFileName) == 0) {
+				*fileSector = findSectorNum;
+				*ErrorReturned = ERR_SUCCESS;
+				return;
+			}
+		}
+	}
+	createFile(openFileName, ErrorReturned);
 }

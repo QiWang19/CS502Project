@@ -70,3 +70,4 @@ void readFromDisk(long DiskID, short sectorToRead, char* readBuffer);
 short findEmptySector(long DiskID, short startSectortoFind);
 void createFile(char* newFileName, long* RrrorReturned);
 void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerData);
+void openFile(char* openFileName, long* fileLogicSector, long* ErrorReturned);

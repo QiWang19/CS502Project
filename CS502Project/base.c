@@ -409,6 +409,14 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			//ErrorReturned SystemCallData->Argument[1]
 			createFile((char*)SystemCallData->Argument[0], SystemCallData->Argument[1]);
 			break;
+		case SYSNUM_OPEN_FILE:
+			//(char*)SystemCallData->Argument[0] open file name
+			//inode SystemCallData->Argument[1]
+			//errorreturned SystemCallData->Argument[2]
+			openFile((char*)SystemCallData->Argument[0], SystemCallData->Argument[1], SystemCallData->Argument[2]);
+			break;
+		case SYSNUM_WRITE_FILE:
+			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
@@ -494,8 +502,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test9;
-		testName = "test9";
+		testAddress = (long)test11;
+		testName = "test11";
 		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
@@ -540,6 +548,15 @@ void osInit(int argc, char *argv[]) {
 		testAddress = (long)test9;
 		strcpy(testName, argv[1]);
 		printFullScheduler = 0;
+	}
+	else if (strcmp(argv[1], "test10") == 0) {
+		testAddress = (long)test10;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 0;
+	}
+	else if (strcmp(argv[1], "test11") == 0) {
+		testAddress = (long)test11;
+		strcpy(testName, argv[1]);
 	}
 	
 	os_create_process(testName, testAddress, 10, &newProcessID, &ErrorReturned);
