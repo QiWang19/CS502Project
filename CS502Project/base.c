@@ -436,6 +436,9 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			//errorreturned SystemCallData->Argument[3]
 			readFile((long)SystemCallData->Argument[0], SystemCallData->Argument[1], (char*)SystemCallData->Argument[2], SystemCallData->Argument[3]);
 			break;
+		case SYSNUM_DIR_CONTENTS:
+			printDirContent(SystemCallData->Argument[0]);
+			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
@@ -521,8 +524,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test11;
-		testName = "test11";
+		testAddress = (long)test12;
+		testName = "test12";
 		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
@@ -575,6 +578,10 @@ void osInit(int argc, char *argv[]) {
 	}
 	else if (strcmp(argv[1], "test11") == 0) {
 		testAddress = (long)test11;
+		strcpy(testName, argv[1]);
+	}
+	else if (strcmp(argv[1], "test12") == 0) {
+		testAddress = (long)test12;
 		strcpy(testName, argv[1]);
 	}
 	

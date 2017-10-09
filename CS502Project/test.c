@@ -606,7 +606,7 @@ void test10(void) {
 
 	GET_TIME_OF_DAY(&CurrentTime);
 	printf("TEST 10:   Ends at Time %ld\n", CurrentTime);
-
+	
 	// This test has no children so termination should be easy.
 	TERMINATE_PROCESS(-1, &ErrorReturned);
 }                                                     // End test10
@@ -756,11 +756,12 @@ void test12(void) {
 			printf("Test12: Successfully read logical block %d\n", Index);
 		}
 	}
-
+	
 	OPEN_FILE("Test12", &Inode, &ErrorReturned);
 	SuccessExpected(ErrorReturned, "OPEN_FILE");
 	printf("Test 12: Completed system call OPEN_FILE\n");
 
+	
 	CREATE_DIR("Dir12", &ErrorReturned);
 	SuccessExpected(ErrorReturned, "CREATE_DIR");
 	printf("Test12: Completed system call CREATE_DIR\n");

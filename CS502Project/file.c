@@ -208,7 +208,7 @@ void createDirectory(char* newDirName, long* ErrorReturned) {
 	}
 	int i = 0;
 	for (i = 0; i < 8; i++) {
-		if (index_sector_data.index_sector_data[i] | 0 == 0) {
+		if ( (index_sector_data.index_sector_data[i] | 0) == 0) {
 			index_sector_data.index_sector_data[i] = emptySector;
 			break;
 		}
@@ -462,4 +462,53 @@ void readFile(long fileSector, long fileLogicalBlock, char* readBuffer, long* Er
 
 void getFileDataFromDisk(long DiskID, long fileSectorNum, char* readBuffer) {
 	readFromDisk(DiskID, fileSectorNum, readBuffer);
+}
+
+void printDirContent(long* ErrorReturned) {
+	int isDirectory = (curtProcessPCB->pcb.curtDir.FileDescription & 1);
+	if ( isDirectory != 1) {					//not a directory, false;
+		*ErrorReturned = ERR_BAD_PARAM;
+		return;
+	}
+	//short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
+	//short curtHeaderLocation = ROOTDIRLOCATION;
+	//union indexSectorData index_sector_data;
+	//union diskHeaderData headerData;
+	//getIndexSectorData(curtDiskID, curtDirIndexLocation, &index_sector_data);
+	//getHeaderData(curtDiskID, curtHeaderLocation, &headerData);
+	printDirContentHelper( &(curtProcessPCB->pcb.curtDir));
+}
+
+void printDirContentHelper(struct diskHeader* dirHeader) {
+	long time = 0;
+	memcpy(&time, dirHeader->CreationTime, 3);
+	printf("\t%d\t\t%s\t\tD\t\t%d\t\t--\n", dirHeader->Inode, dirHeader->Name, time);
+	//get curt dir index sector data
+	short curtDirIndexLocation = dirHeader->IndexLocation;
+	union indexSectorData index_sector_data;
+	getIndexSectorData(curtDiskID, curtDirIndexLocation, &index_sector_data);
+
+	short findSectorNum = 0;
+	union diskHeaderData findHeaderData;
+	unsigned char findFileDescription;
+	int i = 0;
+	for (i = 0; i < 8; i++) {
+		if (index_sector_data.index_sector_data[i] == 0) {
+			continue;
+		}
+		findSectorNum = index_sector_data.index_sector_data[i];
+		getHeaderData(curtDiskID, findSectorNum, &findHeaderData);
+		findFileDescription = findHeaderData.diskHeader_data.FileDescription;
+		if ((findFileDescription & 1) == 0) {			//the sector is a file
+			time = 0;
+			memcpy(&time, findHeaderData.diskHeader_data.CreationTime, 3);
+			printf("\t%d\t\t%s\t\tF\t\t%d\t\t%hd\n", findHeaderData.diskHeader_data.Inode, 
+				findHeaderData.diskHeader_data.Name, time, findHeaderData.diskHeader_data.FileSize);
+		}
+		else if ((findFileDescription & 1) == 1) {		//is a directory
+			/*printf("%hd\n", findSectorNum);
+			printf("%d\n", i);*/
+			printDirContentHelper(&(findHeaderData.diskHeader_data));
+		}
+	}
 }

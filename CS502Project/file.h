@@ -76,3 +76,5 @@ void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long
 void closeFile(long fileSectorNum, long* ErrorReturned);
 void readFile(long fileSector, long fileLogicalBlock, char* readBuffer, long* ErrorReturned);
 void getFileDataFromDisk(long DiskID, long fileSectorNum, char* readBuffer);
+void printDirContent(long* ErrorReturned);
+void printDirContentHelper(struct diskHeader* dirHeader);
