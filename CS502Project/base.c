@@ -172,6 +172,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	BOOL duplicateName = FALSE;			//The process of the same name has been created
 	long res;			//the result of create process
 	long sleepTime;		//sleep time in sleep system call
+	long fileHeaderSector;// created file header sector num
 
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
@@ -407,7 +408,8 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 		case SYSNUM_CREATE_FILE:
 			//file name to create (char*)SystemCallData->Argument[0]
 			//ErrorReturned SystemCallData->Argument[1]
-			createFile((char*)SystemCallData->Argument[0], SystemCallData->Argument[1]);
+			
+			createFile((char*)SystemCallData->Argument[0], SystemCallData->Argument[1], &fileHeaderSector);
 			break;
 		case SYSNUM_OPEN_FILE:
 			//(char*)SystemCallData->Argument[0] open file name
@@ -416,6 +418,11 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			openFile((char*)SystemCallData->Argument[0], SystemCallData->Argument[1], SystemCallData->Argument[2]);
 			break;
 		case SYSNUM_WRITE_FILE:
+			//file sector (long)SystemCallData->Argument[0]
+			//file logical sector SystemCallData->Argument[1]
+			//written buffer (char*)SystemCallData->Argument[2]
+			//errorreturned SystemCallData->Argument[3]
+			writeFile((long)SystemCallData->Argument[0], (long)SystemCallData->Argument[1], (char*)SystemCallData->Argument[2], SystemCallData->Argument[3]);
 			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");

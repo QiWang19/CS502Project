@@ -68,6 +68,8 @@ void getIndexSectorData(long curtDiskID, short indexLocation, union indexSectorD
 void createDirectory(char* newDirName, long* ErrorReturned);
 void readFromDisk(long DiskID, short sectorToRead, char* readBuffer);
 short findEmptySector(long DiskID, short startSectortoFind);
-void createFile(char* newFileName, long* RrrorReturned);
+void createFile(char* newFileName, long* RrrorReturned, long* fileHeaderSec);
 void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerData);
 void openFile(char* openFileName, long* fileLogicSector, long* ErrorReturned);
+void writeFileToDisk(long DiskID, long fileSecNum, char* writtenBuffer);
+void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long* ErrorReturned);

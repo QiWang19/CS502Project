@@ -311,7 +311,7 @@ short findEmptySector(long DiskID, short startSectortoFind) {
 	return -1;
 }
 
-void createFile(char* newFileName, long* ErrorReturned) {
+void createFile(char* newFileName, long* ErrorReturned, long* fileHeaderSec) {
 	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
 	union indexSectorData index_sector_data;
 	getIndexSectorData(curtDiskID, curtDirIndexLocation, &index_sector_data);
@@ -356,6 +356,7 @@ void createFile(char* newFileName, long* ErrorReturned) {
 	//update curt index sector
 	writeIndexSectorToDisk(curtDiskID, curtDirIndexLocation, index_sector_data.char_data);
 	//write new file dir to disk
+	*fileHeaderSec = emptySectorForFileHeader;
 	writeRootDirToDisk(curtDiskID, emptySectorForFileHeader, FCB.char_data);
 	//write new index sector to disk
 	writeIndexSectorToDisk(curtDiskID, emptySectorForNewIndexSec, newIndexSector.char_data);
@@ -390,5 +391,49 @@ void openFile(char* openFileName, long* fileSector, long* ErrorReturned) {
 			}
 		}
 	}
-	createFile(openFileName, ErrorReturned);
+	long fileHeaderSec = 0;
+	createFile(openFileName, ErrorReturned, &fileHeaderSec);
+	*fileSector = fileHeaderSec;
+}
+
+void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long* ErrorReturned) {
+	//get index sector of curt file
+	union diskHeaderData curtFileHeaderData;
+	getHeaderData(curtDiskID, fileSector, &curtFileHeaderData);
+	short curtFileIndexLocation = curtFileHeaderData.diskHeader_data.IndexLocation;
+	union indexSectorData curtFileIndexSectorData;
+	getIndexSectorData(curtDiskID, curtFileIndexLocation, &curtFileIndexSectorData);
+
+	//set logical block to new free sector, write file to the sector
+	short emptySectorNumForFile = findEmptySector(curtDiskID, FREESECTORLOCATION);
+	if (emptySectorNumForFile == -1) {
+		ErrorReturned = ERR_BAD_PARAM;
+		return;
+	}
+	curtFileIndexSectorData.index_sector_data[fileLogicalBlock] = emptySectorNumForFile;
+	writeFileToDisk(curtDiskID, emptySectorNumForFile, writtenBuffer);			//also update bitmap data
+
+	//change file header, size, level, to disk
+	//curtFileHeaderData.diskHeader_data.FileSize = 16;
+	int i = 0;
+	int fileSize = 0;
+	for (i = 0; i < 8; i++) {
+		if ((curtFileIndexSectorData.index_sector_data[i] | 0) != 0) {
+			fileSize = fileSize + 1;
+		}
+	}
+	fileSize = fileSize * 16;
+	printf("filesize ========= %d", fileSize);
+	curtFileHeaderData.diskHeader_data.FileSize = fileSize;
+	//update curt file index sector
+	writeIndexSectorToDisk(curtDiskID, curtFileIndexLocation, curtFileIndexSectorData.char_data);
+
+	//update curt file header data
+	writeRootDirToDisk(curtDiskID, fileSector, curtFileHeaderData.char_data);
+	*ErrorReturned = ERR_SUCCESS;
+}
+
+void writeFileToDisk(long DiskID, long fileSecNum, char* writtenBuffer) {
+	writeToDisk(DiskID, fileSecNum, writtenBuffer);
+	updateBitMap(DiskID, fileSecNum);
 }
