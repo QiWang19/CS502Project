@@ -423,7 +423,7 @@ void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long
 		}
 	}
 	fileSize = fileSize * 16;
-	printf("filesize ========= %d", fileSize);
+	//printf("filesize ========= %d", fileSize);
 	curtFileHeaderData.diskHeader_data.FileSize = fileSize;
 	//update curt file index sector
 	writeIndexSectorToDisk(curtDiskID, curtFileIndexLocation, curtFileIndexSectorData.char_data);
@@ -436,4 +436,30 @@ void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long
 void writeFileToDisk(long DiskID, long fileSecNum, char* writtenBuffer) {
 	writeToDisk(DiskID, fileSecNum, writtenBuffer);
 	updateBitMap(DiskID, fileSecNum);
+}
+
+void closeFile(long fileSectorNum, long* ErrorReturned) {
+	*ErrorReturned = ERR_SUCCESS;
+	return;
+}
+
+void readFile(long fileSector, long fileLogicalBlock, char* readBuffer, long* ErrorReturned) {
+	if (fileLogicalBlock < 0 || fileLogicalBlock >= 8) {
+		*ErrorReturned = ERR_BAD_PARAM;
+		return;
+	}
+	//get file index sector data
+	union diskHeaderData curtFileHeaderData;
+	getHeaderData(curtDiskID, fileSector, &curtFileHeaderData);
+	short curtFileIndexLocation = curtFileHeaderData.diskHeader_data.IndexLocation;
+	union indexSectorData curtFileIndexSectorData;
+	getIndexSectorData(curtDiskID, curtFileIndexLocation, &curtFileIndexSectorData);
+
+	//read from index sector data
+	getFileDataFromDisk(curtDiskID, curtFileIndexSectorData.index_sector_data[fileLogicalBlock], readBuffer);
+	*ErrorReturned = ERR_SUCCESS;
+}
+
+void getFileDataFromDisk(long DiskID, long fileSectorNum, char* readBuffer) {
+	readFromDisk(DiskID, fileSectorNum, readBuffer);
 }

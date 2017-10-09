@@ -73,3 +73,6 @@ void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerDat
 void openFile(char* openFileName, long* fileLogicSector, long* ErrorReturned);
 void writeFileToDisk(long DiskID, long fileSecNum, char* writtenBuffer);
 void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long* ErrorReturned);
+void closeFile(long fileSectorNum, long* ErrorReturned);
+void readFile(long fileSector, long fileLogicalBlock, char* readBuffer, long* ErrorReturned);
+void getFileDataFromDisk(long DiskID, long fileSectorNum, char* readBuffer);

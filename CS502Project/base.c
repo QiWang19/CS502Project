@@ -424,6 +424,18 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			//errorreturned SystemCallData->Argument[3]
 			writeFile((long)SystemCallData->Argument[0], (long)SystemCallData->Argument[1], (char*)SystemCallData->Argument[2], SystemCallData->Argument[3]);
 			break;
+		case SYSNUM_CLOSE_FILE:
+			//file sector (long)SystemCallData->Argument[0]
+			//errorreturned SystemCallData->Argument[1]
+			closeFile((long)SystemCallData->Argument[0], SystemCallData->Argument[1]);
+			break;
+		case SYSNUM_READ_FILE:
+			//file sector (long)SystemCallData->Argument[0]
+			//file logical sector SystemCallData->Argument[1]
+			//read buffer (char*)SystemCallData->Argument[2]
+			//errorreturned SystemCallData->Argument[3]
+			readFile((long)SystemCallData->Argument[0], SystemCallData->Argument[1], (char*)SystemCallData->Argument[2], SystemCallData->Argument[3]);
+			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
