@@ -197,8 +197,9 @@ void addToReadyQueue(struct PCB_Queue* curtPCB)
 	if (headReadyQ == NULL && rearReadyQ == NULL) {
 		headReadyQ = rearReadyQ = newPCB;
 		lenReadyQ = lenReadyQ + 1;
+		return;
 	}
-	else {
+	else if (rearReadyQ != NULL){
 		rearReadyQ->next = newPCB;
 		rearReadyQ = newPCB;
 		lenReadyQ = lenReadyQ + 1;

@@ -8,6 +8,10 @@
 #include             <stdlib.h>
 #include             <ctype.h>
 
+#define                  DO_LOCK                     1
+#define                  DO_UNLOCK                   0
+#define                  SUSPEND_UNTIL_LOCKED        TRUE
+#define                  DO_NOT_SUSPEND              FALSE
 //Global variables
 struct Disk_Queue* headDisk = NULL;
 struct Disk_Queue* rearDisk = NULL;
@@ -16,20 +20,24 @@ long lenDiskQ = 0;
 extern struct PCB_Queue* curtProcessPCB;
 extern long exitInterrupt;
 
-void addToDiskQueue() {
+int addToDiskQueue() {
 	struct Disk_Queue* newDisk;
 	newDisk = (struct Disk_Queue*)malloc(sizeof(struct Disk_Queue));
 	newDisk->curtPCB = curtProcessPCB;
 	newDisk->next = NULL;
-	if (headDisk == NULL && rearDisk == NULL) {
+	//if (headDisk == NULL && rearDisk == NULL) {
+	if (lenDiskQ == 0) {
 		headDisk = rearDisk = newDisk;
 		lenDiskQ = lenDiskQ + 1;
+		return 1;
 	}
-	else {
+	else if (rearDisk != NULL){
 		rearDisk->next = newDisk;
 		rearDisk = newDisk;
 		lenDiskQ = lenDiskQ + 1;
+		return 1;
 	}
+	return 0;
 }
 
 struct PCB_Queue* delFromDiskQueue() {
@@ -37,7 +45,11 @@ struct PCB_Queue* delFromDiskQueue() {
 	if (headDisk != NULL) {
 		headDisk = headDisk->next;
 		lenDiskQ = lenDiskQ - 1;
-		if (headDisk == NULL) {
+		/*if (headDisk == NULL) {
+			rearDisk = NULL;
+		}*/
+		if (lenDiskQ == 0) {
+			headDisk = NULL;
 			rearDisk = NULL;
 		}
 		return p->curtPCB;
@@ -45,10 +57,15 @@ struct PCB_Queue* delFromDiskQueue() {
 	return NULL;
 }
 
-void updateDiskQueue() {
+void updateDiskQueue(int DiskID) {
 	exitInterrupt = 0;
+	INT32 LockResult;
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	struct PCB_Queue* p = delFromDiskQueue();
+
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	addToReadyQueue(p);
+
 	exitInterrupt = 1;
 }
 

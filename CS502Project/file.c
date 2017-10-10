@@ -4,6 +4,13 @@
 #include				"disk.h"
 #include				"oscreateProcess.h"
 
+
+#define                  DO_LOCK                     1
+#define                  DO_UNLOCK                   0
+#define                  SUSPEND_UNTIL_LOCKED        TRUE
+#define                  DO_NOT_SUSPEND              FALSE
+
+
 extern struct PCB_Queue* curtProcessPCB;
 unsigned char diskBitMap[MAX_NUMBER_OF_DISKS][256];		//(4 * Bitmapsize) sectors * 16byte, totally 2048 bits, 2048 sectors
 union diskHeaderData diskHeader[MAX_NUMBER_OF_DISKS];	//the root dir of each disk
@@ -86,13 +93,38 @@ void writeBitmapToDisk(long DiskID) {
 //write the buffer to the sector in the disk
 void writeToDisk(long DiskID, int sectorToWrite, char* writtenBuffer) {
 	MEMORY_MAPPED_IO mmio;
+	MEMORY_MAPPED_IO mmio1;
+
+	INT32 LockResult;
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
+	//Make sure the disk is free
+	mmio1.Mode = Z502Status;
+	mmio1.Field1 = (long)DiskID;
+	mmio1.Field2 = mmio1.Field3 = 0;
+	MEM_READ(Z502Disk, &mmio1);
+	if (mmio1.Field2 == DEVICE_IN_USE) {
+		while (mmio1.Field2 != DEVICE_FREE)
+		{
+			mmio1.Mode = Z502Status;
+			mmio1.Field1 = (long)DiskID;
+			mmio1.Field2 = mmio1.Field3 = 0;
+			MEM_READ(Z502Disk, &mmio1);
+		}
+	}
+
 	mmio.Mode = Z502DiskWrite;
 	mmio.Field1 = (long)DiskID;
 	mmio.Field2 = (long)sectorToWrite;
 	mmio.Field3 = (long)writtenBuffer;
 	mmio.Field4 = 0;
-	MEM_WRITE(Z502Disk, &mmio);
-	addToDiskQueue();
+	
+	//if (res == 1) {
+		MEM_WRITE(Z502Disk, &mmio);
+	//}
+		int res = addToDiskQueue();
+	
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
+	
 	dispatcher();
 }
 
@@ -253,6 +285,9 @@ void getIndexSectorData(long curtDiskID, short indexLocation, union indexSectorD
 }
 
 void readFromDisk(long DiskID, short sectorToRead, char* readBuffer) {
+
+	INT32 LockResult;
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	MEMORY_MAPPED_IO mmio;
 	MEMORY_MAPPED_IO mmio1;
 	/*mmio.Mode = Z502DiskRead;
@@ -282,8 +317,15 @@ void readFromDisk(long DiskID, short sectorToRead, char* readBuffer) {
 	mmio.Field2 = (long)sectorToRead;
 	mmio.Field3 = (char*)readBuffer;
 	mmio.Field4 = 0;
+	
+	//if (res == 1) {
 	MEM_WRITE(Z502Disk, &mmio);
-	addToDiskQueue();
+	//}
+	int res = addToDiskQueue();
+	
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
+	
+	
 	//For idle
 	/*mmio1.Mode = Z502Action;
 	mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;

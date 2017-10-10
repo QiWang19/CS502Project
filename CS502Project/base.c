@@ -84,7 +84,7 @@ void InterruptHandler(void) {
 	}
 
 	if (DeviceID >= DISK_INTERRUPT_DISK0 && DeviceID <= DISK_INTERRUPT_DISK7) {
-		updateDiskQueue();
+		updateDiskQueue(DeviceID - 5);
 	}
 	
 	switch (DeviceID)
@@ -274,6 +274,8 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			}
 			break;
 		case SYSNUM_PHYSICAL_DISK_WRITE:
+			
+
 			mmio.Mode = Z502DiskWrite;
 			mmio.Field1 = (long)SystemCallData->Argument[0];
 			mmio.Field2 = (long)SystemCallData->Argument[1];
@@ -524,8 +526,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test12;
-		testName = "test12";
+		testAddress = (long)test0;
+		testName = "test0";
 		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
@@ -582,6 +584,24 @@ void osInit(int argc, char *argv[]) {
 	}
 	else if (strcmp(argv[1], "test12") == 0) {
 		testAddress = (long)test12;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 1;
+	}
+	else if (strcmp(argv[1], "test13") == 0) {
+		testAddress = (long)test13;
+		strcpy(testName, argv[1]);
+		printFullScheduler = 0;
+	}
+	else if (strcmp(argv[1], "test14") == 0) {
+		testAddress = (long)test14;
+		strcpy(testName, argv[1]);
+	}
+	else if (strcmp(argv[1], "test15") == 0) {
+		testAddress = (long)test15;
+		strcpy(testName, argv[1]);
+	}
+	else if (strcmp(argv[1], "test16") == 0) {
+		testAddress = (long)test16;
 		strcpy(testName, argv[1]);
 	}
 	
