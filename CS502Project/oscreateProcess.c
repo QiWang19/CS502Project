@@ -27,16 +27,13 @@ long lenTimerQ = 0;
 long lenReadyQ = 0;
 //current running process 
 struct PCB_Queue* curtProcessPCB = NULL;
-//
+//flag to record the state of interrupt
 long exitInterrupt = 0;
-
 //scheduler print in printScheduler.c
 extern int printFullScheduler;
 
-//struct OS_Structures {
-//	struct Process_PCB pcb;
-//
-//};
+
+//Add the PCB pointed by pcb to PCB queue
 //return the pointer to PCBQ element of the pcb just be added
 struct PCB_Queue* addToPCBQueue(struct Process_PCB* pcb) {
 	struct PCB_Queue* curtPCB;
@@ -54,6 +51,8 @@ struct PCB_Queue* addToPCBQueue(struct Process_PCB* pcb) {
 	return curtPCB;
 }
 
+//Create process and start the context
+//Called by osinit
 void os_create_process(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;
 	struct Process_PCB pcb;
@@ -104,6 +103,8 @@ void os_create_process(char* ProcessName, long StartingAddress, long InitialPrio
 		
 }
 
+//Add curt PCB to timer queue after computing the end time of the timer
+//keep the timer queue in ascending order
 void addToTimerQueue(long sleepTime) {
 	struct timer_Queue* curt = NULL;
 	struct timer_Queue* q = NULL;
@@ -170,6 +171,8 @@ int isDelFromTimerQueue() {
 	return 1;
 }
 
+//Delete the first element in the timer queue
+//return the pointer to the pcb in pcb queue just be deleted
 struct PCB_Queue* delFromTimerQueue() {
 	struct timer_Queue* p = headTimer;
 	//struct PCB_Queue* q = p->curtPCB;
@@ -186,6 +189,7 @@ struct PCB_Queue* delFromTimerQueue() {
 	return q;
 }
 
+//Add the pcb queue pointed by poinyer to ready queue
 void addToReadyQueue(struct PCB_Queue* curtPCB)
 {
 	if (curtPCB == NULL) {
@@ -214,6 +218,7 @@ void addToReadyQueue(struct PCB_Queue* curtPCB)
 	
 }
 
+//Delete the first element in ready queue
 void delFromReadyQueue()
 {
 	struct Ready_Queue* p = headReadyQ;
@@ -228,7 +233,7 @@ void delFromReadyQueue()
 	}	
 	
 }
-//del from readyQ, start context and suspend curt process
+//Delete one element from readyQ, start context and suspend curt process
 void dispatcher() {
 	
 	struct Ready_Queue* p = headReadyQ;
@@ -237,7 +242,7 @@ void dispatcher() {
 
 	//syscalls.h line 88
 	while (TRUE) {
-		if (exitInterrupt == 0) {
+		if (exitInterrupt == 0) {			//loop while does not enter the interrupt
 			CALL(fff);
 			if (headReadyQ != NULL) {
 				break;
@@ -273,6 +278,8 @@ void dispatcher() {
 	}
 }
 
+//Delete an element from the timer queue and add it to ready queue if time is up
+//Called by interrupt
 void updateTimerQueue() {
 	
 	INT32 LockResult;
@@ -333,6 +340,7 @@ void updateTimerQueue() {
 	READ_MODIFY(MEMORY_INTERLOCK_BASE, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 }
 
+//Terminate process system call
 void endProcess(int type, long * ErrorReturned)
 {
 	MEMORY_MAPPED_IO mmio;
@@ -392,53 +400,7 @@ void endProcess(int type, long * ErrorReturned)
 
 }
 
-
-
-//void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
-//{
-//	if (printFullScheduler == 0) {
-//		return;
-//	}
-//	//variables
-//	//tarverse for NumberOfReadyProcesses
-//	int i = 0;
-//	struct Ready_Queue* p = headReadyQ;
-//	//tarverse for TimerSuspendedProcessPIDs
-//	int j = 0;
-//	struct timer_Queue* q = headTimer;
-//
-//	SP_INPUT_DATA SPData;
-//	memset(&SPData, 0, sizeof(SP_INPUT_DATA));
-//	strcpy(SPData.TargetAction, targetAction);
-//
-//	SPData.CurrentlyRunningPID = curtProcessPCB->pcb.process_ID;
-//	
-//	/*if (strcmp(targetAction, "create") == 0) {
-//
-//	}*/
-//	SPData.TargetPID = targetPID;
-//
-//	SPData.NumberOfReadyProcesses = lenReadyQ;
-//	i = 0;
-//	p = headReadyQ;
-//	while (p != NULL && i < SPData.NumberOfReadyProcesses) {
-//		SPData.ReadyProcessPIDs[i] = p->curtPCB->pcb.process_ID;
-//		i = i + 1;
-//		p = p->next;
-//	}
-//
-//	SPData.NumberOfTimerSuspendedProcesses = lenTimerQ;
-//	j = 0;
-//	q = headTimer;
-//	while (q != NULL && j < SPData.NumberOfTimerSuspendedProcesses)
-//	{
-//		SPData.TimerSuspendedProcessPIDs[j] = q->curtPCB->pcb.process_ID;
-//		j = j + 1;
-//		q = q->next;
-//	}
-//	CALL(SPPrintLine(&SPData));
-//}
-
+//Create a process and add it to ready queue, the context does not start
 void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPriority, long* ProcessID, long* ErrorReturned) {
 	MEMORY_MAPPED_IO mmio;
 	struct Process_PCB pcb;
@@ -450,7 +412,6 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 	
 	//scheduler printer
 	printScheduler(printFullScheduler, "create", PID);
-
 
 	mmio.Mode = Z502InitializeContext;
 	mmio.Field1 = 0;
