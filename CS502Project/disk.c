@@ -58,6 +58,8 @@ struct PCB_Queue* delFromDiskQueue() {
 }
 
 void updateDiskQueue(int DiskID) {
+	
+
 	exitInterrupt = 0;
 	INT32 LockResult;
 	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);

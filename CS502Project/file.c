@@ -518,6 +518,7 @@ void printDirContent(long* ErrorReturned) {
 	//union diskHeaderData headerData;
 	//getIndexSectorData(curtDiskID, curtDirIndexLocation, &index_sector_data);
 	//getHeaderData(curtDiskID, curtHeaderLocation, &headerData);
+	printf("\tInode\t\tFilename\tD/F\t\tCreationTime\tFileSize\n");
 	printDirContentHelper( &(curtProcessPCB->pcb.curtDir));
 }
 
