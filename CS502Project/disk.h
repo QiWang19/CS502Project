@@ -1,4 +1,4 @@
-
+//Define the structure of the disk queue
 struct Disk_Queue{
 	struct PCB_Queue* curtPCB;
 	long DiskID;

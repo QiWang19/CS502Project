@@ -526,8 +526,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test12;
-		testName = "test12";
+		testAddress = (long)test13;
+		testName = "test13";
 		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {

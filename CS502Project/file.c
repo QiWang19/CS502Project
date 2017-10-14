@@ -17,6 +17,7 @@ union diskHeaderData diskHeader[MAX_NUMBER_OF_DISKS];	//the root dir of each dis
 long curtDiskID = 0;									//defined when create directory
 long Inode = 1;											//global variable
 
+//For the format system call, called by osinit
 void formatDisk(long DiskID, long* ErrorReturned) {
 	if (DiskID >= MAX_NUMBER_OF_DISKS) {
 		*ErrorReturned = ERR_BAD_PARAM;
@@ -26,6 +27,7 @@ void formatDisk(long DiskID, long* ErrorReturned) {
 	*ErrorReturned = ERR_SUCCESS;
 }
 
+//Give the value to sector0, write sector0, bitmap, root dir, to disk
 void initSector0(long DiskID, long* result) {
 	union diskSector0Date disk_sector0_data;
 	disk_sector0_data.sector0_data.DiskID = DiskID;
@@ -46,6 +48,7 @@ void initSector0(long DiskID, long* result) {
 	initRootDir(DiskID, ROOTDIRLOCATION, ROOTDIRHEADER);
 }
 
+//set the bits of sectors of bitmap in bitmap to 1
 void initBitMap(long DiskID, short bitMapLocation, short bitMapSize) {
 	int sectorStartIndex = bitMapLocation;
 	int sectorEndIndex = bitMapLocation + bitMapSize;
@@ -62,11 +65,14 @@ void initBitMap(long DiskID, short bitMapLocation, short bitMapSize) {
 		diskBitMap[DiskID][secIndex] = diskBitMap[DiskID][secIndex] | (1 << offset);
 	}
 }
+
+//set bits of swap sectors in bitmap to 1 and update the disk
 void initSwapSectors(long DiskID, short swapLocation, short swapSize) {
 	setSwapBitMap(DiskID, swapLocation, swapSize);
 	writeBitmapToDisk(DiskID);
 }
 
+//set sectors in bitmap for swap to 1
 void setSwapBitMap(long DiskID, short swapLocation, short swapSize) {
 	int sectorStartIndex = swapLocation;
 	int sectorEndIndex = swapLocation + swapSize;
@@ -78,6 +84,7 @@ void setSwapBitMap(long DiskID, short swapLocation, short swapSize) {
 		diskBitMap[DiskID][secIndex] = diskBitMap[DiskID][secIndex] | (1 << offset);
 	}
 }
+
 //write the content of bitmap to the bitmap sectors in the disk
 void writeBitmapToDisk(long DiskID) {
 	int bitmapSectors = 16;			//16 sectors for bitmap
@@ -96,7 +103,7 @@ void writeToDisk(long DiskID, int sectorToWrite, char* writtenBuffer) {
 	MEMORY_MAPPED_IO mmio1;
 
 	INT32 LockResult;
-	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 2 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	//Make sure the disk is free
 	mmio1.Mode = Z502Status;
 	mmio1.Field1 = (long)DiskID;
@@ -123,17 +130,18 @@ void writeToDisk(long DiskID, int sectorToWrite, char* writtenBuffer) {
 	//}
 		int res = addToDiskQueue();
 	
-	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 2 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	
 	dispatcher();
 }
 
+//put sector0 data to disk and update the bitmap for disk
 void writeSector0ToDisk(long DiskID, int sectorToWrite, union diskSector0Date* disk_sector0_data) {
 	writeToDisk(DiskID, sectorToWrite, disk_sector0_data->char_data);
 	updateBitMap(DiskID, sectorToWrite);
 }
 
-//TODO: Update the bitmap after change some sector in a disk
+//Update the bitmap after change some sector in a disk
 //change bitmap and write it to disk;
 void updateBitMap(long DiskID, int sectorToWrite) {
 	int secIndex = sectorToWrite / 8;
@@ -143,6 +151,7 @@ void updateBitMap(long DiskID, int sectorToWrite) {
 	writeBitmapToDisk(DiskID);
 }
 
+//give initial value to header structure
 void initRootDir(long DiskID, short rootDirLocation, short rootHeaderSize) {
 	union indexSectorData index_sector_data;
 	union diskHeaderData disk_header_data;
@@ -169,16 +178,19 @@ void initRootDir(long DiskID, short rootDirLocation, short rootHeaderSize) {
 	curtProcessPCB->pcb.curtDir = disk_header_data.diskHeader_data;
 }
 
+//write header data to some sector
 void writeRootDirToDisk(long DiskID, short rootDirLocation, union diskHeaderData* disk_header_data) {			// 1 sector
 	writeToDisk(DiskID, rootDirLocation, disk_header_data->char_data);
 	updateBitMap(DiskID, rootDirLocation);
 }
 
+//write the sector of index of header structure to disk
 void writeIndexSectorToDisk(long DiskID, short rootIndexLocation, union indexSectorData* index_sector_data) {
 	writeToDisk(DiskID, rootIndexLocation, index_sector_data->char_data);
 	updateBitMap(DiskID, rootIndexLocation);
 }
 
+//For open dir system call. Get the dir has the dirname, set it as curt dir for the process
 void openDirectory(long DiskID, char* dirName, long* ErrorReturned) {
 	if (DiskID < -1 || DiskID >= MAX_NUMBER_OF_DISKS) {
 		*ErrorReturned = ERR_BAD_PARAM;
@@ -229,6 +241,8 @@ void openDirectory(long DiskID, char* dirName, long* ErrorReturned) {
 	return;
 }
 
+//For create dir system call, find empty sector for new dir and its index, 
+//write the updated data to disk
 void createDirectory(char* newDirName, long* ErrorReturned) {
 	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
 	union indexSectorData index_sector_data;
@@ -284,10 +298,11 @@ void getIndexSectorData(long curtDiskID, short indexLocation, union indexSectorD
 	readFromDisk(curtDiskID, indexLocation, indexSecData->char_data);
 }
 
+//get the data of some sector in the disk to readbuffer
 void readFromDisk(long DiskID, short sectorToRead, char* readBuffer) {
 
 	INT32 LockResult;
-	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 1 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	MEMORY_MAPPED_IO mmio;
 	MEMORY_MAPPED_IO mmio1;
 	/*mmio.Mode = Z502DiskRead;
@@ -323,7 +338,7 @@ void readFromDisk(long DiskID, short sectorToRead, char* readBuffer) {
 	//}
 	int res = addToDiskQueue();
 	
-	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 3 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
+	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 1 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	
 	
 	//For idle
@@ -335,7 +350,7 @@ void readFromDisk(long DiskID, short sectorToRead, char* readBuffer) {
 	
 }
 
-//find one empty sector to use
+//find one empty sector to use, return the number of the found sector 
 short findEmptySector(long DiskID, short startSectortoFind) {
 	short freeSectorNum;
 	int i = startSectortoFind;
@@ -353,6 +368,8 @@ short findEmptySector(long DiskID, short startSectortoFind) {
 	return -1;
 }
 
+//For create file system call, set fileheader and index data
+//return the sector number for file header
 void createFile(char* newFileName, long* ErrorReturned, long* fileHeaderSec) {
 	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
 	union indexSectorData index_sector_data;
@@ -369,8 +386,8 @@ void createFile(char* newFileName, long* ErrorReturned, long* fileHeaderSec) {
 			break;
 		}
 	}
-	int emptySectorForNewIndexSec = findEmptySector(curtDiskID, emptySectorForFileHeader + 1);
-	if (emptySectorForNewIndexSec == -1) {
+	int emptySectorForNewIndexSec = findEmptySector(curtDiskID, emptySectorForFileHeader + 1);		//plus 1 since the header has 
+	if (emptySectorForNewIndexSec == -1) {															//already occupied 1 sector
 		*ErrorReturned = ERR_BAD_PARAM;
 		return;
 	}
@@ -405,10 +422,13 @@ void createFile(char* newFileName, long* ErrorReturned, long* fileHeaderSec) {
 	*ErrorReturned = ERR_SUCCESS;
 }
 
+
+//read data of header in the sector from the disk
 void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerData) {
 	readFromDisk(DiskID, sectorNum, headerData->char_data);
 }
 
+//open the file has the filename return the sector of the file
 void openFile(char* openFileName, long* fileSector, long* ErrorReturned) {
 	//short fileSector = 0;
 	union indexSectorData curtIndexSectorData;
@@ -438,6 +458,7 @@ void openFile(char* openFileName, long* fileSector, long* ErrorReturned) {
 	*fileSector = fileHeaderSec;
 }
 
+//write the data in writtenbuffer to the filesector, set fileLogicalBlock(index data) the filesector
 void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long* ErrorReturned) {
 	//get index sector of curt file
 	union diskHeaderData curtFileHeaderData;
@@ -475,16 +496,19 @@ void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long
 	*ErrorReturned = ERR_SUCCESS;
 }
 
+//write the data in writtenbuffer to the disk
 void writeFileToDisk(long DiskID, long fileSecNum, char* writtenBuffer) {
 	writeToDisk(DiskID, fileSecNum, writtenBuffer);
 	updateBitMap(DiskID, fileSecNum);
 }
 
+//Close file system call
 void closeFile(long fileSectorNum, long* ErrorReturned) {
 	*ErrorReturned = ERR_SUCCESS;
 	return;
 }
 
+//get data from fileLogicalBlock
 void readFile(long fileSector, long fileLogicalBlock, char* readBuffer, long* ErrorReturned) {
 	if (fileLogicalBlock < 0 || fileLogicalBlock >= 8) {
 		*ErrorReturned = ERR_BAD_PARAM;
@@ -502,10 +526,12 @@ void readFile(long fileSector, long fileLogicalBlock, char* readBuffer, long* Er
 	*ErrorReturned = ERR_SUCCESS;
 }
 
+//Using diskread to get the content of file from the sector in the disk
 void getFileDataFromDisk(long DiskID, long fileSectorNum, char* readBuffer) {
 	readFromDisk(DiskID, fileSectorNum, readBuffer);
 }
 
+//For dir content system call
 void printDirContent(long* ErrorReturned) {
 	int isDirectory = (curtProcessPCB->pcb.curtDir.FileDescription & 1);
 	if ( isDirectory != 1) {					//not a directory, false;
@@ -522,6 +548,7 @@ void printDirContent(long* ErrorReturned) {
 	printDirContentHelper( &(curtProcessPCB->pcb.curtDir));
 }
 
+//recursively print the dir content, called by printDirContent
 void printDirContentHelper(struct diskHeader* dirHeader) {
 	long time = 0;
 	memcpy(&time, dirHeader->CreationTime, 3);

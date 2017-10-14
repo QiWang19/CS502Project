@@ -13,6 +13,7 @@
 #ifndef _COMMON
 #define _COMMON
 
+//Define the structure of the sector0, the file/disk header, index sector
 struct sector0 {
 	char DiskID;
 	char BitmapSize;
@@ -51,6 +52,7 @@ union indexSectorData {
 
 #endif
 
+//The functions of operations defined in file.c
 void initSector0(long DiskID, long* result);
 void initBitMap(long DiskID, short bitMapLocation, short bitMapSize);
 void initSwapSectors(long DiskID, short swapLocation, short swapSize);

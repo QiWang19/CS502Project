@@ -20,6 +20,7 @@ long lenDiskQ = 0;
 extern struct PCB_Queue* curtProcessPCB;
 extern long exitInterrupt;
 
+//Add the curt PCB to disk queue
 int addToDiskQueue() {
 	struct Disk_Queue* newDisk;
 	newDisk = (struct Disk_Queue*)malloc(sizeof(struct Disk_Queue));
@@ -40,6 +41,7 @@ int addToDiskQueue() {
 	return 0;
 }
 
+//delete one element from the head of the disk queue
 struct PCB_Queue* delFromDiskQueue() {
 	struct Disk_Queue* p = headDisk;
 	if (headDisk != NULL) {
@@ -57,6 +59,7 @@ struct PCB_Queue* delFromDiskQueue() {
 	return NULL;
 }
 
+//Used in interrupt handler, delete one element from disk queue and add it to ready queue
 void updateDiskQueue(int DiskID) {
 	
 

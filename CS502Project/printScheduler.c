@@ -23,6 +23,7 @@ extern long lenDiskQ;
 //scheduler print
 int printFullScheduler = 0;
 
+//For the state printer of scheduler, called by dispatch and set data
 void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
 {
 	if (printFullScheduler == 0) {
