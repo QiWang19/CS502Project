@@ -42,6 +42,12 @@
     <ClCompile Include="file.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="page.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="printMemory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="studentConfiguration.h">
@@ -72,6 +78,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="page.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="printMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -124,10 +124,9 @@ void writeToDisk(long DiskID, int sectorToWrite, char* writtenBuffer) {
 	mmio.Field2 = (long)sectorToWrite;
 	mmio.Field3 = (long)writtenBuffer;
 	mmio.Field4 = 0;
-	
-	//if (res == 1) {
+
 		MEM_WRITE(Z502Disk, &mmio);
-	//}
+
 		int res = addToDiskQueue();
 	
 	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 2 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
@@ -212,7 +211,7 @@ void openDirectory(long DiskID, char* dirName, long* ErrorReturned) {
 	}
 	unsigned char curtFileDescription = curtProcessPCB->pcb.curtDir.FileDescription;
 	int curtIndexBit = curtFileDescription & 6;
-	//printf("curtIndexBit========================= %d\n", curtIndexBit);
+	
 	union indexSectorData curtIndexSectorData;
 	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
 	int i = 0;
@@ -305,13 +304,7 @@ void readFromDisk(long DiskID, short sectorToRead, char* readBuffer) {
 	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 1 + DiskID, DO_LOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
 	MEMORY_MAPPED_IO mmio;
 	MEMORY_MAPPED_IO mmio1;
-	/*mmio.Mode = Z502DiskRead;
-	mmio.Field1 = (long)DiskID;
-	mmio.Field2 = (long)sectorToRead;
-	mmio.Field3 = (long)readBuffer;
-	mmio.Field4 = 0;
-	addToDiskQueue();
-	MEM_WRITE(Z502DiskRead, &mmio);*/
+	
 
 	//Make sure the disk is free
 	mmio1.Mode = Z502Status;
@@ -333,18 +326,13 @@ void readFromDisk(long DiskID, short sectorToRead, char* readBuffer) {
 	mmio.Field3 = (char*)readBuffer;
 	mmio.Field4 = 0;
 	
-	//if (res == 1) {
+
 	MEM_WRITE(Z502Disk, &mmio);
-	//}
+	
 	int res = addToDiskQueue();
 	
 	//READ_MODIFY(MEMORY_INTERLOCK_BASE + 1 + DiskID, DO_UNLOCK, SUSPEND_UNTIL_LOCKED, &LockResult);
-	
-	
-	//For idle
-	/*mmio1.Mode = Z502Action;
-	mmio1.Field1 = mmio1.Field2 = mmio1.Field3 = mmio1.Field4 = 0;
-	MEM_WRITE(Z502Idle, &mmio1);*/
+
 	dispatcher();
 	
 	
@@ -430,7 +418,7 @@ void getHeaderData(long DiskID, short sectorNum, union diskHeaderData* headerDat
 
 //open the file has the filename return the sector of the file
 void openFile(char* openFileName, long* fileSector, long* ErrorReturned) {
-	//short fileSector = 0;
+	
 	union indexSectorData curtIndexSectorData;
 	short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
 	getIndexSectorData(curtDiskID, curtDirIndexLocation, &curtIndexSectorData);
@@ -486,7 +474,7 @@ void writeFile(long fileSector, long fileLogicalBlock, char* writtenBuffer, long
 		}
 	}
 	fileSize = fileSize * 16;
-	//printf("filesize ========= %d", fileSize);
+	
 	curtFileHeaderData.diskHeader_data.FileSize = fileSize;
 	//update curt file index sector
 	writeIndexSectorToDisk(curtDiskID, curtFileIndexLocation, curtFileIndexSectorData.char_data);
@@ -538,12 +526,7 @@ void printDirContent(long* ErrorReturned) {
 		*ErrorReturned = ERR_BAD_PARAM;
 		return;
 	}
-	//short curtDirIndexLocation = curtProcessPCB->pcb.curtDir.IndexLocation;
-	//short curtHeaderLocation = ROOTDIRLOCATION;
-	//union indexSectorData index_sector_data;
-	//union diskHeaderData headerData;
-	//getIndexSectorData(curtDiskID, curtDirIndexLocation, &index_sector_data);
-	//getHeaderData(curtDiskID, curtHeaderLocation, &headerData);
+	
 	printf("\tInode\t\tFilename\tD/F\t\tCreationTime\tFileSize\n");
 	printDirContentHelper( &(curtProcessPCB->pcb.curtDir));
 }
@@ -576,8 +559,7 @@ void printDirContentHelper(struct diskHeader* dirHeader) {
 				findHeaderData.diskHeader_data.Name, time, findHeaderData.diskHeader_data.FileSize);
 		}
 		else if ((findFileDescription & 1) == 1) {		//is a directory
-			/*printf("%hd\n", findSectorNum);
-			printf("%d\n", i);*/
+			
 			printDirContentHelper(&(findHeaderData.diskHeader_data));
 		}
 	}

@@ -116,6 +116,8 @@
     <ClCompile Include="disk.c" />
     <ClCompile Include="file.c" />
     <ClCompile Include="oscreateProcess.c" />
+    <ClCompile Include="page.c" />
+    <ClCompile Include="printMemory.c" />
     <ClCompile Include="printScheduler.c" />
     <ClCompile Include="sample.c" />
     <ClCompile Include="statePrinter.c" />
@@ -128,7 +130,9 @@
     <ClInclude Include="global.h" />
     <ClInclude Include="lock.h" />
     <ClInclude Include="oscreateProcess.h" />
+    <ClInclude Include="page.h" />
     <ClInclude Include="printFullScheduler.h" />
+    <ClInclude Include="printMemory.h" />
     <ClInclude Include="protos.h" />
     <ClInclude Include="studentConfiguration.h" />
     <ClInclude Include="syscalls.h" />

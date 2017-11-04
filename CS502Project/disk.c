@@ -26,7 +26,7 @@ int addToDiskQueue() {
 	newDisk = (struct Disk_Queue*)malloc(sizeof(struct Disk_Queue));
 	newDisk->curtPCB = curtProcessPCB;
 	newDisk->next = NULL;
-	//if (headDisk == NULL && rearDisk == NULL) {
+	
 	if (lenDiskQ == 0) {
 		headDisk = rearDisk = newDisk;
 		lenDiskQ = lenDiskQ + 1;
@@ -47,9 +47,7 @@ struct PCB_Queue* delFromDiskQueue() {
 	if (headDisk != NULL) {
 		headDisk = headDisk->next;
 		lenDiskQ = lenDiskQ - 1;
-		/*if (headDisk == NULL) {
-			rearDisk = NULL;
-		}*/
+		
 		if (lenDiskQ == 0) {
 			headDisk = NULL;
 			rearDisk = NULL;

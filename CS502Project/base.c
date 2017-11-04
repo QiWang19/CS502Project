@@ -91,20 +91,9 @@ void InterruptHandler(void) {
 	{
 	case TIMER_INTERRUPT:
 		
-		//deletedTimerPCB = delFromTimerQueue();
-		//printf("========================%ld\n", deletedTimerPCB->pcb.NewContext);
-		//addToReadyQueue(deletedTimerPCB);
 		updateTimerQueue();
 		break;
 	
-	//case DISK_INTERRUPT:
-	//	
-	//	//TODO:
-	//	updateDiskQueue();
-	//	break;
-	//case DISK_INTERRUPT_DISK1:
-	//	updateDiskQueue();
-	//	break;
 	default:
 		
 		break;
@@ -139,10 +128,22 @@ void FaultHandler(void) {
 	MEM_READ(Z502InterruptDevice, &mmio);
 	DeviceID = mmio.Field1;
 
+	
+
 	INT32 Status;
 	Status = mmio.Field2;
-	printf("Fault_handler: Found vector type %d with value %d\n", DeviceID,
-		Status);
+	switch (DeviceID)
+	{
+	case INVALID_MEMORY:
+		invalidMemoryHandler(Status);
+		break;
+	default:
+		printf("Fault_handler: Found vector type %d with value %d\n", DeviceID,
+				Status);
+		break;
+	}
+	//printf("Fault_handler: Found vector type %d with value %d\n", DeviceID,
+	//	Status);
 } // End of FaultHandler
 
   /************************************************************************
@@ -197,9 +198,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 		//terminate system call
 		case SYSNUM_TERMINATE_PROCESS:
 			endProcess((int)SystemCallData->Argument[0], SystemCallData->Argument[1]);
-			/*mmio.Mode = Z502Action;
-			mmio.Field1 = mmio.Field2 = mmio.Field3 = 0;
-			MEM_WRITE(Z502Halt, &mmio);*/
+			
 			break;
 		case SYSNUM_SLEEP:
 			//Start the timer
@@ -218,7 +217,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			dispatcher();
 			break;
 		case SYSNUM_GET_PROCESS_ID:
-			//if (*(long*)SystemCallData->Argument[0] == *(long*)("")) {
+			
 			if (strcmp((char*)SystemCallData->Argument[0], "") == 0) {
 				mmio.Mode = Z502GetCurrentContext;
 				mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
@@ -250,7 +249,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 				}
 				if (p == NULL) {
 					*(long*)SystemCallData->Argument[2] = ERR_BAD_PARAM;
-					printf("ERROR!\n");
+					
 
 				}
 				else if (strcmp(p->pcb.process_Name, pName) == 0 ) {		//find the process
@@ -289,22 +288,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			MEM_WRITE(Z502Idle, &mmio1);
 			dispatcher();
 			//Make sure that disk is running
-			/*mmio1.Mode = Z502Status;
-			mmio1.Field1 = (long)SystemCallData->Argument[0];
-			mmio1.Field2 = mmio1.Field3 = 0;
-			MEM_READ(Z502Disk, &mmio1);
-			if (mmio1.Field2 == DEVICE_IN_USE) {
-				while (mmio1.Field2 != DEVICE_FREE)
-				{
-					mmio1.Mode = Z502Status;
-					mmio1.Field1 = (long)SystemCallData->Argument[0];
-					mmio1.Field2 = mmio1.Field3 = 0;
-					MEM_READ(Z502Disk, &mmio1);
-				}
-			}
-			else {
-				printf("Got erroneous result for Disk Status - Device is free.\n");
-			}*/
+			
 			
 			break;
 		case SYSNUM_PHYSICAL_DISK_READ:
@@ -335,20 +319,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			MEM_WRITE(Z502Idle, &mmio1);
 			dispatcher();
 			//Wait for the disk action to complete
-			/*mmio1.Mode = Z502Status;
-			mmio1.Field1 = (long)SystemCallData->Argument[0];
-			mmio1.Field2 = mmio1.Field3 = 0;
-			MEM_READ(Z502Disk, &mmio1);
-			if (mmio1.Field2 == DEVICE_IN_USE) {
-				while (mmio1.Field2 != DEVICE_FREE)
-				{
-					mmio1.Mode = Z502Status;
-					mmio1.Field1 = (long)SystemCallData->Argument[0];
-					mmio1.Field2 = mmio1.Field3 = 0;
-					MEM_READ(Z502Disk, &mmio1);
-				}
-			}*/
-			//dispatcher();
+			
 			break;
 		case SYSNUM_CHECK_DISK:
 			mmio.Mode = Z502CheckDisk;
@@ -368,7 +339,7 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 			}		
 			//cannot create if illegal priority
 			if (pPriority < 0) {
-				printf("Illegal priority\n");
+				
 				*(long*)SystemCallData->Argument[3] = pID;
 				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 				break;
@@ -383,7 +354,6 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 				}
 			}
 			if (p != NULL) {										//duplicate name
-				printf("Illegal or duplicate process names\n");
 				*(long*)SystemCallData->Argument[4] = ERR_BAD_PARAM;
 				break;
 			}
@@ -526,8 +496,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test0;
-		testName = "test0";
+		testAddress = (long)test24;
+		testName = "test24";
 		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
@@ -606,19 +576,6 @@ void osInit(int argc, char *argv[]) {
 	}
 	
 	os_create_process(testName, testAddress, 10, &newProcessID, &ErrorReturned);
-/*
-	mmio.Mode = Z502InitializeContext;
-	mmio.Field1 = 0;
-	mmio.Field2 = (long)test0;
-	mmio.Field3 = (long)PageTable;
 
-	MEM_WRITE(Z502Context, &mmio);   // Start this new Context Sequence
-	mmio.Mode = Z502StartContext;
-	// Field1 contains the value of the context returned in the last call
-	// Suspends this current thread
-	mmio.Field2 = START_NEW_CONTEXT_AND_SUSPEND;
-	MEM_WRITE(Z502Context, &mmio);     // Start up the context
-
-	*/
 
 }                                               // End of osInit

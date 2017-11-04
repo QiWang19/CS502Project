@@ -444,3 +444,10 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 	addToReadyQueue(curtPCB);
 }
 
+void haltSimulation() {
+	MEMORY_MAPPED_IO mmio;
+	mmio.Field1 = mmio.Field2 = mmio.Field3 = mmio.Field4 = 0;
+	mmio.Mode = Z502Action;
+	MEM_WRITE(Z502Halt, &mmio);
+}
+
