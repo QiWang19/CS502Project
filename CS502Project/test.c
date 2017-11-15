@@ -1151,9 +1151,9 @@ void testZ(void) {
 
 #define    STEP_SIZE               NUMBER_VIRTUAL_PAGES/(4 * NUMBER_PHYSICAL_PAGES )
 #define    DISPLAY_GRANULARITY_M   32 * STEP_SIZE
-#define    TOTAL_ITERATIONS        256
+//#define    TOTAL_ITERATIONS        256
 #define    SLEEP_GRANULARITY        16
-
+#define    TOTAL_ITERATIONS        20
 void testM(void) {
 	long OurProcessID;
 	long MemoryAddress;
@@ -1441,7 +1441,7 @@ void test24(void) {
 	}   // End of for Loops
 
 	for (Loops = 0; Loops < LOOP_COUNT; Loops++) {
-
+		
 		// We can only read back from pages we've previously
 		// written to, so find out which pages those are.
 		PageNumber = mtr->page_touched[(short)Loops];
@@ -1492,8 +1492,8 @@ void test25(void) {
 
 	GET_PROCESS_ID("", &OurProcessID, &ErrorReturned);
 	printf("Test 25: Pid %ld, Release %s\n", OurProcessID, CURRENT_REL);
-	FORMAT(1, &ErrorReturned);
-	CHECK_DISK(1, &ErrorReturned);
+	//FORMAT(1, &ErrorReturned);
+	//CHECK_DISK(1, &ErrorReturned);
 	for (Iteration = 0; Iteration < 5; Iteration++) {
 		sprintf(ProcessName, "Test25_%ld", Iteration);
 		printf("Creating process \"%s\"\n", ProcessName);
@@ -1521,7 +1521,7 @@ void test25(void) {
 	}
 	// When we get here, all child processes have terminated
 	GET_TIME_OF_DAY(&CurrentTime);
-	CHECK_DISK(1, &ErrorReturned);
+	//CHECK_DISK(1, &ErrorReturned);
 	printf("TEST 25:   Ends at Time %ld\n", CurrentTime);
 	TERMINATE_PROCESS(-1, &ErrorReturned); // Terminate all
 }    // End test 25

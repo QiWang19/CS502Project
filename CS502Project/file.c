@@ -189,6 +189,11 @@ void writeIndexSectorToDisk(long DiskID, short rootIndexLocation, union indexSec
 	updateBitMap(DiskID, rootIndexLocation);
 }
 
+void writeVictimPageToDisk(long DiskID, int sectorToWrite, char* writtenBuffer) {
+	writeToDisk(DiskID, sectorToWrite, writtenBuffer);
+	updateBitMap(DiskID, sectorToWrite);
+}
+
 //For open dir system call. Get the dir has the dirname, set it as curt dir for the process
 void openDirectory(long DiskID, char* dirName, long* ErrorReturned) {
 	if (DiskID < -1 || DiskID >= MAX_NUMBER_OF_DISKS) {

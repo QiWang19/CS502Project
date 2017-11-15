@@ -18,7 +18,7 @@ struct timer_Queue* rearTimer = NULL;
 struct Ready_Queue* headReadyQ = NULL;
 struct Ready_Queue* rearReadyQ = NULL;
 //PID
-long PID = 7;
+long PID = 0;
 //PCB_Queue length
 long lenPCBQ = 0;
 //timer_Queue length
@@ -58,7 +58,9 @@ void os_create_process(char* ProcessName, long StartingAddress, long InitialPrio
 	struct Process_PCB pcb;
 	struct PCB_Queue* curtPCB;
 	void *PageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
+	void *ShadowPageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
 	pcb.PageTable = PageTable;
+	pcb.ShadowPageTable = ShadowPageTable;
 	pcb.process_ID = PID + 1;
 	PID = PID + 1;
 	//Set pcb name
@@ -346,8 +348,9 @@ void endProcess(int type, long * ErrorReturned)
 	MEMORY_MAPPED_IO mmio;
 	struct PCB_Queue* p = curtProcessPCB;
 	struct PCB_Queue* q = headPCB;
-	if (type == -1) {				//stop the current process and dispatch
+	if (type == -1) {	//stop the current process and dispatch
 		curtProcessPCB->pcb.NewContext = -1;
+		ClearProcessPhysicalMem(curtProcessPCB->pcb.process_ID);
 		//lenPCBQ = lenPCBQ - 1;
 		if (lenPCBQ >= 2) {
 			lenPCBQ = lenPCBQ - 1;
@@ -406,7 +409,9 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 	struct Process_PCB pcb;
 	struct PCB_Queue* curtPCB;			//return value after add to pcb queue
 	void *PageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
+	void *ShadowPageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
 	pcb.PageTable = PageTable;
+	pcb.ShadowPageTable = ShadowPageTable;
 	pcb.process_ID = PID + 1;
 	PID = PID + 1;
 	

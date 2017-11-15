@@ -3,12 +3,14 @@
 #define		SECTORSIZE                           (short)16
 #define		BITMAPSIZE							 (short)4
 #define		ROOTDIRHEADER						 (short)1
-#define		SWAPSPACE						     (short)3
+//#define		SWAPSPACE						     (short)3
+#define		SWAPSPACE						     (short)500
 #define		ROOTDIRLOCATION						 (short)17
 #define		ROOTINDEXLOCATION					 (short)18
 #define		SWAPLOCATION						 (short)19
 #define		BITMAPLOCATION						 (short)1
-#define		FREESECTORLOCATION					 (short)31
+//#define		FREESECTORLOCATION					 (short)31
+#define		FREESECTORLOCATION					 (short)2019
 
 #ifndef _COMMON
 #define _COMMON

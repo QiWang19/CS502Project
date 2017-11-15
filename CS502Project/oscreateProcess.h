@@ -1,13 +1,14 @@
 #include				"file.h"
-
+#include				"global.h"
 struct Process_PCB
 {
 	long process_ID;
 	long NewContext;
-	void *PageTable;
+	UINT16 *PageTable;
 	char* process_Name ;
 	long processPriority;
 	struct diskHeader curtDir;
+	UINT16 *ShadowPageTable;
 };
 
 struct PCB_Queue

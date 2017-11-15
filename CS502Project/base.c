@@ -24,6 +24,7 @@ Default program start is in test0.
 ************************************************************************/
 
 #include			 "oscreateProcess.h"
+#include			 "page.h"
 #include			 "disk.h"
 #include			 "file.h"
 #include             "global.h"
@@ -575,6 +576,7 @@ void osInit(int argc, char *argv[]) {
 		strcpy(testName, argv[1]);
 	}
 	
+	initFrameList();
 	os_create_process(testName, testAddress, 10, &newProcessID, &ErrorReturned);
 
 
