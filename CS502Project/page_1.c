@@ -41,29 +41,29 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	}
 	for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
 		if (!FrameTable.frameTable[i].isUsed) {
-			//FindEmptyFrame = 1;
+			FindEmptyFrame = 1;
 			break;
 		}
-		if (i == NUMBER_PHYSICAL_PAGES - 1) {
-			NoFreeFrame = 1;
-		}
+		//if (i == NUMBER_PHYSICAL_PAGES - 1) {
+		//	NoFreeFrame = 1;
+		//}
 	}
-	/*
+	
 	if (FindEmptyFrame) {		//otherwise the FrameTable is full
 		FreeFrameNum = i;
 	}
-	*/
-	if (NoFreeFrame == 0) {
-		FreeFrameNum = i;
-	}
+	
+	//if (NoFreeFrame == 0) {
+	//	FreeFrameNum = i;
+	//}
 	else {						//find free frame using approximate LRU
-		for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
+/*		for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
 			isModified = GetPageTableState(i) & PTBL_MODIFIED_BIT;
 			if (isModified == 0) {
 				FreeFrameNum = i;
 				break;
 			}
-		}
+		}								*/
 		if (FreeFrameNum == -1) {
 			 //can not find unmodified
 			while (FreeFrameNum == -1) {
