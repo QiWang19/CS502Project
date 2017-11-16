@@ -1453,7 +1453,7 @@ void test24(void) {
 			printf("PID= %ld  address= %4ld   written= %4d   read= %4d\n",
 				OurProcessID, MemoryAddress, DataWritten, DataRead);
 		if (DataRead != DataWritten) {
-			printf("ERROR HAS OCCURRED: READ NOT SAME AS WRITE.\n");
+			printf("ERROR HAS OCCURRED: READ NOT SAME AS================================= WRITE.\n");
 			printf("PID= %ld  address= %4ld   written= %4d   read= %4d\n",
 				OurProcessID, MemoryAddress, DataWritten, DataRead);
 		}
@@ -1492,8 +1492,8 @@ void test25(void) {
 
 	GET_PROCESS_ID("", &OurProcessID, &ErrorReturned);
 	printf("Test 25: Pid %ld, Release %s\n", OurProcessID, CURRENT_REL);
-	//FORMAT(1, &ErrorReturned);
-	//CHECK_DISK(1, &ErrorReturned);
+	FORMAT(1, &ErrorReturned);
+	CHECK_DISK(1, &ErrorReturned);
 	for (Iteration = 0; Iteration < 5; Iteration++) {
 		sprintf(ProcessName, "Test25_%ld", Iteration);
 		printf("Creating process \"%s\"\n", ProcessName);
@@ -1521,7 +1521,7 @@ void test25(void) {
 	}
 	// When we get here, all child processes have terminated
 	GET_TIME_OF_DAY(&CurrentTime);
-	//CHECK_DISK(1, &ErrorReturned);
+	CHECK_DISK(1, &ErrorReturned);
 	printf("TEST 25:   Ends at Time %ld\n", CurrentTime);
 	TERMINATE_PROCESS(-1, &ErrorReturned); // Terminate all
 }    // End test 25

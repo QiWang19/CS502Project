@@ -82,3 +82,4 @@ void readFile(long fileSector, long fileLogicalBlock, char* readBuffer, long* Er
 void getFileDataFromDisk(long DiskID, long fileSectorNum, char* readBuffer);
 void printDirContent(long* ErrorReturned);
 void printDirContentHelper(struct diskHeader* dirHeader);
+void writeVictimPageToDisk(long DiskID, int sectorToWrite, char* writtenBuffer);

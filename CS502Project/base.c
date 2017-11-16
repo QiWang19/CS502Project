@@ -24,6 +24,7 @@ Default program start is in test0.
 ************************************************************************/
 
 #include			 "oscreateProcess.h"
+#include			 "page_1.h"
 #include			 "page.h"
 #include			 "disk.h"
 #include			 "file.h"
@@ -136,7 +137,8 @@ void FaultHandler(void) {
 	switch (DeviceID)
 	{
 	case INVALID_MEMORY:
-		invalidMemoryHandler(Status);
+		//invalidMemoryHandler(Status);
+		InvalidMemoryHandler(Status);
 		break;
 	default:
 		printf("Fault_handler: Found vector type %d with value %d\n", DeviceID,
@@ -497,8 +499,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test24;
-		testName = "test24";
+		testAddress = (long)test25;
+		testName = "test25";
 		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {
@@ -576,7 +578,9 @@ void osInit(int argc, char *argv[]) {
 		strcpy(testName, argv[1]);
 	}
 	
-	initFrameList();
+	//initFrameList();
+	InitFrameTable();
+	BuildFrameList();
 	os_create_process(testName, testAddress, 10, &newProcessID, &ErrorReturned);
 
 

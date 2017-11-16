@@ -1,4 +1,5 @@
-#include			"oscreateProcess.h"
+#include			 "oscreateProcess.h"
+#include			 "page_1.h"
 #include			 "lock.h"
 #include			 "stdio.h"
 #include             "global.h"
@@ -350,7 +351,8 @@ void endProcess(int type, long * ErrorReturned)
 	struct PCB_Queue* q = headPCB;
 	if (type == -1) {	//stop the current process and dispatch
 		curtProcessPCB->pcb.NewContext = -1;
-		ClearProcessPhysicalMem(curtProcessPCB->pcb.process_ID);
+		//ClearProcessPhysicalMem(curtProcessPCB->pcb.process_ID);
+		ClearProcessFrame(curtProcessPCB->pcb.process_ID);
 		//lenPCBQ = lenPCBQ - 1;
 		if (lenPCBQ >= 2) {
 			lenPCBQ = lenPCBQ - 1;
@@ -456,3 +458,6 @@ void haltSimulation() {
 	MEM_WRITE(Z502Halt, &mmio);
 }
 
+void FindCurtProcessPCB(struct PCB_Queue** runningProcess) {
+	*runningProcess = curtProcessPCB;
+}

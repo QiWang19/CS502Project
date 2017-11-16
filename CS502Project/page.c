@@ -3,6 +3,8 @@
 #include				"oscreateProcess.h"
 #include				"syscalls.h"
 #include				"printMemory.h"
+#include				"protos.h"
+
 
 static int frameUsed[NUMBER_PHYSICAL_PAGES];
 struct FrameTable frameTable;
@@ -263,3 +265,4 @@ void ClearProcessPhysicalMem(int pid) {
 	}
 
 }
+

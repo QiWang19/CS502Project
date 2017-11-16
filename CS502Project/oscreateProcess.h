@@ -46,3 +46,4 @@ void endProcess(int type, long* ErrorReturned);
 //scheduler printer 
 void printScheduler(int printFullScheduler, char* targetAction, long targetPID);
 void haltSimulation();
+void FindCurtProcessPCB(struct PCB_Queue** runningProcess);

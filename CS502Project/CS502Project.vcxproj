@@ -113,10 +113,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="base.c" />
+    <ClCompile Include="clist.c" />
     <ClCompile Include="disk.c" />
     <ClCompile Include="file.c" />
     <ClCompile Include="oscreateProcess.c" />
     <ClCompile Include="page.c" />
+    <ClCompile Include="page_1.c" />
     <ClCompile Include="printMemory.c" />
     <ClCompile Include="printScheduler.c" />
     <ClCompile Include="sample.c" />
@@ -125,12 +127,14 @@
     <ClCompile Include="z502.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="clist.h" />
     <ClInclude Include="disk.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="lock.h" />
     <ClInclude Include="oscreateProcess.h" />
     <ClInclude Include="page.h" />
+    <ClInclude Include="page_1.h" />
     <ClInclude Include="printFullScheduler.h" />
     <ClInclude Include="printMemory.h" />
     <ClInclude Include="protos.h" />
