@@ -83,15 +83,15 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 
 		VictimPageNum = FrameTable.frameTable[FreeFrameNum].pageNumber;
 		FindPCBbyPID(FrameTable.frameTable[FreeFrameNum].pid, &VictimPCB);
-		if (VictimPCB->pcb.ShadowPageTable[VictimPageNum] == 0) {
-			VictimSectorNum = VictimCount;
-			VictimCount = VictimCount + 1;
-			//VictimSectorNum = VictimPCB->pcb.ShadowPageTable[VictimPageNum];
-		}
-		else {
+		if (VictimPCB->pcb.ShadowPageTable[VictimPageNum] != 0) {
 			//VictimSectorNum = VictimCount;
 			//VictimCount = VictimCount + 1;
 			VictimSectorNum = VictimPCB->pcb.ShadowPageTable[VictimPageNum];
+		}
+		else {
+			VictimSectorNum = VictimCount;
+			VictimCount = VictimCount + 1;
+			//VictimSectorNum = VictimPCB->pcb.ShadowPageTable[VictimPageNum];
 		}
 		FreeFrameNum = VictimPCB->pcb.PageTable[VictimPageNum] & 0x0FFF;
 		Z502ReadPhysicalMemory(FreeFrameNum, VictimPageData);
@@ -99,15 +99,20 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 		VictimPCB->pcb.ShadowPageTable[VictimPageNum] = VictimSectorNum;
 		VictimPCB->pcb.PageTable[VictimPageNum] = 0;
 	}
+	
+
+	CurtPCB->pcb.PageTable[VirtualPageNumber] = FreeFrameNum | PTBL_VALID_BIT;
+
+	FrameTable.frameTable[FreeFrameNum].pageNumber = VirtualPageNumber;
+	FrameTable.frameTable[FreeFrameNum].state = CurtPCB->pcb.PageTable[VirtualPageNumber];
+	FrameTable.frameTable[FreeFrameNum].pid = CurtPCB->pcb.process_ID;
+	FrameTable.frameTable[FreeFrameNum].isUsed = TRUE;
+
 	if (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
 		Z502WritePhysicalMemory(FreeFrameNum, PageOnDisk);
 		//readFromDisk(VICTIM_DISK, CurtPCB->pcb.ShadowPageTable[VirtualPageNumber], PageOnDisk);
 	}
-	FrameTable.frameTable[FreeFrameNum].pageNumber = VirtualPageNumber;
-	FrameTable.frameTable[FreeFrameNum].pid = CurtPCB->pcb.process_ID;
-	FrameTable.frameTable[FreeFrameNum].isUsed = TRUE;
 
-	CurtPCB->pcb.PageTable[VirtualPageNumber] = FreeFrameNum | PTBL_VALID_BIT;
 }
 
 int GetPageTableState(int FrameNum) {
