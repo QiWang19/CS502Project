@@ -30,11 +30,16 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	struct PCB_Queue* VictimPCB = NULL;
 	int VictimSectorNum = 0;
 	int NoFreeFrame = 0;
+	int count_print_mem = 0;
 
 	if (VirtualPageNumber >= NUMBER_VIRTUAL_PAGES) {
 		haltSimulation();
 	}
-	//printMemory(&MPData);
+	if (count_print_mem % 50 == 0) {
+		printMemory(&MPData);
+		count_print_mem = 0;
+	}
+	count_print_mem++;
 	FindCurtProcessPCB(&CurtPCB);
 	if (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
 		readFromDisk(VICTIM_DISK, CurtPCB->pcb.ShadowPageTable[VirtualPageNumber], PageOnDisk);

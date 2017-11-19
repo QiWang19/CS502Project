@@ -302,16 +302,11 @@ void ReceiveMessage(INT32 SourceID, char* MessageBuffer, INT32 MessageReceiveLen
 		if (curtProcessPCB->pcb.MessageSendLength > 0) {
 			flag = 0;
 		}
-		while (curtProcessPCB->pcb.MessageSendLength <= 0) {
+		if (curtProcessPCB->pcb.MessageSendLength <= 0) {
 			addToReadyQueue(curtPCB);
 			dispatcher();
 		}
 	}
-	/*
-	while (curtProcessPCB->pcb.MessageSendLength <= 0) {
-		addToReadyQueue(curtPCB);
-		dispatcher();
-	}		*/
 	
 	curtPCB = curtProcessPCB;
 	*MessageSendLength = curtProcessPCB->pcb.MessageSendLength;

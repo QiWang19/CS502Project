@@ -5,13 +5,16 @@
 
 //extern struct FrameTable frameTable;
 extern struct FrameTable FrameTable;
+int printerCount = 0;
 int initMPData = 0;
+int BASE = 50;
 void printMemory(MP_INPUT_DATA* MPData) {
 	//MP_INPUT_DATA MPData;
 	if (!initMPData) {
 		memset(MPData, 0, sizeof(MP_INPUT_DATA));
 		initMPData = 1;
 	}
+	
 	int i = 0;
 	struct PCB_Queue* pcbOfFrame = NULL;
 	for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
@@ -24,7 +27,11 @@ void printMemory(MP_INPUT_DATA* MPData) {
 		}
 		
 	}
-	MPPrintLine(MPData);
+	if ( printerCount % BASE == 0) {
+		MPPrintLine(MPData);
+		printerCount = 0;
+	}
+	printerCount = printerCount + 1;
 }
 
 void MemoryOutput(MP_INPUT_DATA* MPData) {
