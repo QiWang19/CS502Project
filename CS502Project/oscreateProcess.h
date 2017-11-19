@@ -9,6 +9,10 @@ struct Process_PCB
 	long processPriority;
 	struct diskHeader curtDir;
 	UINT16 *ShadowPageTable;
+	int MessageSendPid;
+	int SourcePID;
+	char* Message;
+	INT32 MessageSendLength;
 };
 
 struct PCB_Queue

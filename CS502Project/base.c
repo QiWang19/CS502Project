@@ -177,6 +177,9 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 	long res;			//the result of create process
 	long sleepTime;		//sleep time in sleep system call
 	long fileHeaderSector;// created file header sector num
+	INT32 StartingAddress;	//define shared area system call
+	INT32 PagesInSharedArea;
+	INT32 NumberPreviousSharers;
 
 	call_type = (short)SystemCallData->SystemCallNumber;
 	if (do_print > 0) {
@@ -414,6 +417,28 @@ void svc(SYSTEM_CALL_DATA *SystemCallData) {
 		case SYSNUM_DIR_CONTENTS:
 			printDirContent(SystemCallData->Argument[0]);
 			break;
+		case SYSNUM_DEFINE_SHARED_AREA:
+			//starting address(INT32)	SystemCallData->Argument[0]
+			//pages in shared area(INT32)
+			//area tag char[] 
+			//num previous sharers INT32
+			//error INT32
+			StartingAddress = (INT32)SystemCallData->Argument[0];
+			PagesInSharedArea = (INT32)SystemCallData->Argument[1];
+			NumberPreviousSharers = (INT32*)SystemCallData->Argument[3];
+			DefineSharedArea(StartingAddress, PagesInSharedArea, (char*)SystemCallData->Argument[2],
+				(INT32*)SystemCallData->Argument[3], (INT32*)SystemCallData->Argument[4]);
+			break;
+		case SYSNUM_SEND_MESSAGE:
+			SendMessage((INT32)(SystemCallData->Argument[0]), (char*)(SystemCallData->Argument[1]), 
+				(INT32)(SystemCallData->Argument[2]), (INT32*)(SystemCallData->Argument[3]));
+			break;
+		case SYSNUM_RECEIVE_MESSAGE:
+			
+			ReceiveMessage((INT32)(SystemCallData->Argument[0]), (char*)(SystemCallData->Argument[1]), 
+				(INT32)(SystemCallData->Argument[2]), (INT32*)(SystemCallData->Argument[3]), 
+				(INT32*)(SystemCallData->Argument[4]), (INT32*)(SystemCallData->Argument[5]));
+			break;
 		default:
 			printf("ERROR! call_type not recognized!\n");
 			printf("Call_type is - %i\n", call_type);
@@ -499,8 +524,8 @@ void osInit(int argc, char *argv[]) {
 	long ErrorReturned = 0;
 	//default test is test0, change test here for testing
 	if (argv[1] == NULL) {
-		testAddress = (long)test25;
-		testName = "test25";
+		testAddress = (long)test28;
+		testName = "test28";
 		printFullScheduler = 0;
 	}
 	else if (strcmp(argv[1], "test1") == 0) {

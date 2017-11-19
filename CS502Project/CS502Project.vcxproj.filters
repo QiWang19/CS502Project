@@ -42,9 +42,6 @@
     <ClCompile Include="file.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="page.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="printMemory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="clist.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="page.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

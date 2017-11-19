@@ -4,6 +4,7 @@
 #include				"syscalls.h"
 #include				"printMemory.h"
 #include				"protos.h"
+#include				<string.h>
 
 
 static int frameUsed[NUMBER_PHYSICAL_PAGES];
@@ -14,8 +15,10 @@ struct FrameList* findVictim;
 MP_INPUT_DATA MPData;
 extern struct PCB_Queue* curtProcessPCB;
 extern struct PCB_Queue* headPCB;
+extern struct FrameTable FrameTable;
 char fakedisk[2048][PGSIZE];
 int vicDiskSectorNum = 19;
+INT32 NumPrevSharers = 0;
 
 //memset(MPData, 0, sizeof(MP_INPUT_DATA));
 void invalidMemoryHandler(UINT16 VirtualPageNumber) {
@@ -31,22 +34,22 @@ void invalidMemoryHandler(UINT16 VirtualPageNumber) {
 		readFromDisk(VICTIMDISK, curtProcessPCB->pcb.ShadowPageTable[VirtualPageNumber], pageOnDisk);
 		/*int fakei = 0;
 		for (fakei = 0; fakei < PGSIZE; fakei++) {
-			pageOnDisk[fakei] = fakedisk[curtProcessPCB->pcb.ShadowPageTable[VirtualPageNumber]][fakei];
+		pageOnDisk[fakei] = fakedisk[curtProcessPCB->pcb.ShadowPageTable[VirtualPageNumber]][fakei];
 		}*/
 	}
 	int emptyFrame = 0;
 	int findFrameValid = 0;
 	findFrameValid = findEmptyFrame(&emptyFrame);
-	
+
 	if (findFrameValid) {
 		curtProcessPCB->pcb.PageTable[(UINT16)VirtualPageNumber] = emptyFrame | PTBL_VALID_BIT;
 		//GetPageTableAddress()[(UINT16)VirtualPageNumber] = emptyFrame | PTBL_VALID_BIT;
 		frameUsed[emptyFrame] = -1;
 		frameTable.frameTable[emptyFrame].isUsed = TRUE;
 		frameTable.frameTable[emptyFrame].pageNumber = VirtualPageNumber;
-		frameTable.frameTable[emptyFrame].pid =(UINT16) curtProcessPCB->pcb.process_ID;
+		frameTable.frameTable[emptyFrame].pid = (UINT16)curtProcessPCB->pcb.process_ID;
 		frameTable.frameTable[emptyFrame].state = GetPageTableAddress()[(UINT16)VirtualPageNumber];
-		
+
 		//MemoryOutput(&MPData);
 		if (curtProcessPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
 			Z502WritePhysicalMemory(emptyFrame, pageOnDisk);
@@ -56,7 +59,7 @@ void invalidMemoryHandler(UINT16 VirtualPageNumber) {
 	}
 	else {
 		//can not find valid empty frame, do page replacement
-		
+
 		PageReplacement(VirtualPageNumber, pageOnDisk);
 		//printMemory(&MPData);
 	}
@@ -123,7 +126,7 @@ void MoveToFirstFrameList(int frameToMove) {
 		headFrameList->prev = p;
 		headFrameList = p;
 	}
-	else if (p->next == NULL){
+	else if (p->next == NULL) {
 		struct FrameList* q = headFrameList;
 		headFrameList = rearFrameList;
 		rearFrameList = rearFrameList->prev;
@@ -132,7 +135,7 @@ void MoveToFirstFrameList(int frameToMove) {
 		headFrameList->next = q;
 		q->prev = headFrameList;
 	}
-	
+
 }
 
 void PageReplacement(UINT16 VirtualPageNumber, char* pageOnDisk) {
@@ -222,8 +225,8 @@ int DiskSecForShadowPageTable(UINT16 VirtualPageNumber, struct FrameList* curren
 	else if (PCBofFrame->pcb.ShadowPageTable[victim_page_num] != 0) {
 		VictimSector = PCBofFrame->pcb.ShadowPageTable[victim_page_num];
 	}
-	
-	
+
+
 	//write data to disk
 	//char* VictimPageData = (void*)calloc(1, PGSIZE);
 	char VictimPageData[PGSIZE];
@@ -232,19 +235,19 @@ int DiskSecForShadowPageTable(UINT16 VirtualPageNumber, struct FrameList* curren
 	writeVictimPageToDisk(VICTIMDISK, VictimSector, VictimPageData);
 	/*int fakei = 0;
 	for (fakei = 0; fakei < PGSIZE; fakei++) {
-		fakedisk[VictimSector][fakei] = VictimPageData[fakei];
+	fakedisk[VictimSector][fakei] = VictimPageData[fakei];
 	}*/
 	PCBofFrame->pcb.PageTable[victim_page_num] = 0;	//make victim pagetable entry invalid
-	//Update curt process pagetable
-	//give freed frame to new page
-	//GetPageTableAddress()[(UINT16)VirtualPageNumber] = physicalFrameNum | PTBL_VALID_BIT;
+													//Update curt process pagetable
+													//give freed frame to new page
+													//GetPageTableAddress()[(UINT16)VirtualPageNumber] = physicalFrameNum | PTBL_VALID_BIT;
 	curtProcessPCB->pcb.PageTable[(UINT16)VirtualPageNumber] = physicalFrameNum | PTBL_VALID_BIT;
 	//Update global frameTable
 	frameUsed[physicalFrameNum] = -1;
 	frameTable.frameTable[physicalFrameNum].isUsed = TRUE;
 	frameTable.frameTable[physicalFrameNum].pageNumber = VirtualPageNumber;
 	frameTable.frameTable[physicalFrameNum].pid = (UINT16)curtProcessPCB->pcb.process_ID;
-	frameTable.frameTable[physicalFrameNum].state = curtProcessPCB->pcb.PageTable[(UINT16)VirtualPageNumber]; 
+	frameTable.frameTable[physicalFrameNum].state = curtProcessPCB->pcb.PageTable[(UINT16)VirtualPageNumber];
 
 
 	return VictimSector;
@@ -266,3 +269,54 @@ void ClearProcessPhysicalMem(int pid) {
 
 }
 
+void DefineSharedArea(INT32 StartingAddress, INT32 PagesInSharedArea, char* AreaTag,
+	INT32* NumberPreviousSharers, INT32* ErrorReturned) {
+	int i = 0;
+	INT32 SharePageID = StartingAddress / PGSIZE;
+	int ShareFrameID = 1;
+	for (i = 0; i < PagesInSharedArea; i++) {
+		curtProcessPCB->pcb.PageTable[SharePageID + i] = ShareFrameID | PTBL_VALID_BIT;
+		FrameTable.frameTable[ShareFrameID].isUsed = TRUE;
+		FrameTable.frameTable[ShareFrameID].areaTag = AreaTag;
+		ShareFrameID = ShareFrameID + 1;
+	}
+	*NumberPreviousSharers = NumPrevSharers;
+	NumPrevSharers = NumPrevSharers + 1;
+	*ErrorReturned = ERR_SUCCESS;
+}
+
+void SendMessage(INT32 ProcessID, char* MessageBuffer, INT32 MessageSendLength, INT32* ErrorReturned) {
+	struct PCB_Queue* FoundPCB;
+	findPCBbyID(ProcessID, &FoundPCB);
+	strcpy(FoundPCB->pcb.Message, MessageBuffer);
+	FoundPCB->pcb.MessageSendLength = MessageSendLength;
+	FoundPCB->pcb.MessageSendPid = curtProcessPCB->pcb.process_ID;
+	*ErrorReturned = ERR_SUCCESS;
+}
+
+void ReceiveMessage(INT32 SourceID, char* MessageBuffer, INT32 MessageReceiveLength, INT32* MessageSendLength,
+	INT32* MessageSenderPid, INT32* ErrorReturned) {
+	struct PCB_Queue* curtPCB = curtProcessPCB;
+	int flag = 1;
+	while (flag) {
+		if (curtProcessPCB->pcb.MessageSendLength > 0) {
+			flag = 0;
+		}
+		while (curtProcessPCB->pcb.MessageSendLength <= 0) {
+			addToReadyQueue(curtPCB);
+			dispatcher();
+		}
+	}
+	/*
+	while (curtProcessPCB->pcb.MessageSendLength <= 0) {
+		addToReadyQueue(curtPCB);
+		dispatcher();
+	}		*/
+	
+	curtPCB = curtProcessPCB;
+	*MessageSendLength = curtProcessPCB->pcb.MessageSendLength;
+	*MessageSenderPid = curtProcessPCB->pcb.MessageSendPid;
+	*ErrorReturned = ERR_SUCCESS;
+	addToReadyQueue(curtPCB);
+	dispatcher();
+}

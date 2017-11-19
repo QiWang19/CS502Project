@@ -62,6 +62,10 @@ void os_create_process(char* ProcessName, long StartingAddress, long InitialPrio
 	void *ShadowPageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
 	pcb.PageTable = PageTable;
 	pcb.ShadowPageTable = ShadowPageTable;
+	pcb.Message = (char*)malloc(256 * sizeof(char));
+	pcb.MessageSendLength = 0;
+	pcb.MessageSendPid = -1;
+	pcb.SourcePID = -1;
 	pcb.process_ID = PID + 1;
 	PID = PID + 1;
 	//Set pcb name
@@ -414,6 +418,10 @@ void createProcesTest3(char* ProcessName, long StartingAddress, long InitialPrio
 	void *ShadowPageTable = (void*)calloc(2, NUMBER_VIRTUAL_PAGES);
 	pcb.PageTable = PageTable;
 	pcb.ShadowPageTable = ShadowPageTable;
+	pcb.Message = (char*)malloc(256 * sizeof(char));
+	pcb.MessageSendLength = 0;
+	pcb.MessageSendPid = -1;
+	pcb.SourcePID = -1;
 	pcb.process_ID = PID + 1;
 	PID = PID + 1;
 	
