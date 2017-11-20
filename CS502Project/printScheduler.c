@@ -21,11 +21,13 @@ extern long lenReadyQ;
 extern long lenDiskQ;
 
 //scheduler print
-int printFullScheduler = 0;
+int printFullScheduler = 0;			//1 for full, -1 for limited
+int printerScheCount = 0;
 
 //For the state printer of scheduler, called by dispatch and set data
 void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
 {
+	int BASE = 25;
 	if (printFullScheduler == 0) {
 		return;
 	}
@@ -78,6 +80,16 @@ void printScheduler(int printFullScheduler, char* targetAction, long targetPID)
 		k = k + 1;
 		r = r->next;
 	}
+	if (printFullScheduler == -1 && printerScheCount % BASE == 0) {
+		CALL(SPPrintLine(&SPData));
+		printerScheCount = 0;
+	}
+	else if (printFullScheduler == 1) {
+		CALL(SPPrintLine(&SPData));
+	}
+	if (printFullScheduler == -1) {
+		printerScheCount = printerScheCount + 1;
+	}
 	
-	CALL(SPPrintLine(&SPData));
+	
 }

@@ -14,6 +14,7 @@ int VictimCount = 19;
 MP_INPUT_DATA MPData;
 extern struct PCB_Queue* curtProcessPCB;
 extern struct PCB_Queue* headPCB;
+extern int printFullMemory;
 
 void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	int VICTIM_DISK = 1;
@@ -35,11 +36,11 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	if (VirtualPageNumber >= NUMBER_VIRTUAL_PAGES) {
 		haltSimulation();
 	}
-	if (count_print_mem % 50 == 0) {
-		printMemory(&MPData);
-		count_print_mem = 0;
-	}
-	count_print_mem++;
+	//if (count_print_mem % 50 == 0) {
+		printMemory(&MPData, printFullMemory);
+	//	count_print_mem = 0;
+	//}
+	//count_print_mem++;
 	FindCurtProcessPCB(&CurtPCB);
 	if (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
 		readFromDisk(VICTIM_DISK, CurtPCB->pcb.ShadowPageTable[VirtualPageNumber], PageOnDisk);

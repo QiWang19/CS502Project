@@ -8,7 +8,8 @@ extern struct FrameTable FrameTable;
 int printerCount = 0;
 int initMPData = 0;
 int BASE = 50;
-void printMemory(MP_INPUT_DATA* MPData) {
+int printFullMemory = -1;		//1 for full -1 for limited
+void printMemory(MP_INPUT_DATA* MPData, int printFullMemory) {
 	//MP_INPUT_DATA MPData;
 	if (!initMPData) {
 		memset(MPData, 0, sizeof(MP_INPUT_DATA));
@@ -27,11 +28,17 @@ void printMemory(MP_INPUT_DATA* MPData) {
 		}
 		
 	}
-	if ( printerCount % BASE == 0) {
+	if (printFullMemory == -1 && printerCount % BASE == 0) {
 		MPPrintLine(MPData);
 		printerCount = 0;
 	}
-	printerCount = printerCount + 1;
+	else if (printFullMemory == 1){
+		MPPrintLine(MPData);
+	}
+	if (printFullMemory == -1) {
+		printerCount = printerCount + 1;
+	}
+	
 }
 
 void MemoryOutput(MP_INPUT_DATA* MPData) {

@@ -46,6 +46,7 @@ extern long lenPCBQ;
 extern long exitInterrupt;
 //print.c
 extern int printFullScheduler;
+extern int printFullMemory;
 
 char *call_names[] = { "mem_read ", "mem_write", "read_mod ", "get_time ",
 "sleep    ", "get_pid  ", "create   ", "term_proc", "suspend  ",
@@ -602,6 +603,42 @@ void osInit(int argc, char *argv[]) {
 		testAddress = (long)test16;
 		strcpy(testName, argv[1]);
 	}
+	else if (strcmp(argv[1], "test21") == 0) {
+		testAddress = (long)test21;
+		printFullMemory = 1;
+	}
+	else if (strcmp(argv[1], "test22") == 0) {
+		testAddress = (long)test22;
+		printFullMemory = 1;
+	}
+	else if (strcmp(argv[1], "test23") == 0) {
+		testAddress = (long)test23;
+		printFullMemory = 1;
+		printFullScheduler = 1;
+	}
+	else if (strcmp(argv[1], "test24") == 0) {
+		testAddress = (long)test24;
+		printFullMemory = -1;
+		printFullScheduler = -1;
+	}
+	else if (strcmp(argv[1], "test25") == 0) {
+		testAddress = (long)test25;
+		printFullMemory = -1;
+		printFullScheduler = -1;
+	}
+	else if (strcmp(argv[1], "test26") == 0) {
+		testAddress = (long)test26;
+		printFullMemory = -1;
+		printFullScheduler = 1;
+	}
+	else if (strcmp(argv[1], "test27") == 0) {
+		testAddress = (long)test27;
+	}
+	else if (strcmp(argv[1], "test28") == 0) {
+		testAddress = (long)test28;
+		printFullMemory = -1;
+	}
+		
 	
 	//initFrameList();
 	InitFrameTable();
