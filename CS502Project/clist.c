@@ -1,7 +1,7 @@
 #include				"clist.h"
-void clist_init(CList *list, void(*destroy)(void *data)) {
+void clist_init(CList *list) {
 	list->size = 0;
-	list->destroy = destroy;
+	//list->destroy = destroy;
 	list->head = NULL;
 	return;
 }

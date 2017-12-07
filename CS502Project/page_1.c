@@ -1,5 +1,5 @@
 #include				"page_1.h"
-#include				"page.h"
+//#include				"page.h"
 #include				"global.h"
 #include				"oscreateProcess.h"
 #include				"syscalls.h"
@@ -15,7 +15,8 @@ MP_INPUT_DATA MPData;
 extern struct PCB_Queue* curtProcessPCB;
 extern struct PCB_Queue* headPCB;
 extern int printFullMemory;
-
+int FindPCBbyPID(int pid, struct PCB_Queue** pcb);
+int FindPCBbyID(int targetPID, struct PCB_Queue** PCBofFrame);
 void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	int VICTIM_DISK = 1;
 	char PageOnDisk[PGSIZE];
@@ -145,7 +146,7 @@ int FindPCBbyPID(int pid, struct PCB_Queue** pcb) {
 void BuildFrameList() {
 	//clist_init(FrameList, clist_destroy(FrameList));
 	FrameList = (CList *)malloc(sizeof(CList));
-	clist_init(FrameList, clist_destroy(FrameList));
+	clist_init(FrameList);
 	CListElmt *element = FrameList->head;
 	int i = 0;
 	for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
@@ -202,4 +203,51 @@ void ClearProcessFrame(int pid) {
 		}
 		
 	}
+}
+INT32 NumPrevSharers = 0;
+void DefineSharedArea(INT32 StartingAddress, INT32 PagesInSharedArea, char* AreaTag,
+	INT32* NumberPreviousSharers, INT32* ErrorReturned) {
+	int i = 0;
+	INT32 SharePageID = StartingAddress / PGSIZE;
+	int ShareFrameID = 1;
+	for (i = 0; i < PagesInSharedArea; i++) {
+		curtProcessPCB->pcb.PageTable[SharePageID + i] = ShareFrameID | PTBL_VALID_BIT;
+		FrameTable.frameTable[ShareFrameID].isUsed = TRUE;
+		FrameTable.frameTable[ShareFrameID].areaTag = AreaTag;
+		ShareFrameID = ShareFrameID + 1;
+	}
+	*NumberPreviousSharers = NumPrevSharers;
+	NumPrevSharers = NumPrevSharers + 1;
+	*ErrorReturned = ERR_SUCCESS;
+}
+
+void SendMessage(INT32 ProcessID, char* MessageBuffer, INT32 MessageSendLength, INT32* ErrorReturned) {
+	struct PCB_Queue* FoundPCB;
+	FindPCBbyID(ProcessID, &FoundPCB);
+	strcpy(FoundPCB->pcb.Message, MessageBuffer);
+	FoundPCB->pcb.MessageSendLength = MessageSendLength;
+	FoundPCB->pcb.MessageSendPid = curtProcessPCB->pcb.process_ID;
+	*ErrorReturned = ERR_SUCCESS;
+}
+
+void ReceiveMessage(INT32 SourceID, char* MessageBuffer, INT32 MessageReceiveLength, INT32* MessageSendLength,
+	INT32* MessageSenderPid, INT32* ErrorReturned) {
+	struct PCB_Queue* curtPCB = curtProcessPCB;
+	int flag = 1;
+	while (flag) {
+		if (curtProcessPCB->pcb.MessageSendLength > 0) {
+			flag = 0;
+		}
+		if (curtProcessPCB->pcb.MessageSendLength <= 0) {
+			addToReadyQueue(curtPCB);
+			dispatcher();
+		}
+	}
+
+	curtPCB = curtProcessPCB;
+	*MessageSendLength = curtProcessPCB->pcb.MessageSendLength;
+	*MessageSenderPid = curtProcessPCB->pcb.MessageSendPid;
+	*ErrorReturned = ERR_SUCCESS;
+	addToReadyQueue(curtPCB);
+	dispatcher();
 }
