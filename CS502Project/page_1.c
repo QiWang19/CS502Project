@@ -37,11 +37,9 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	if (VirtualPageNumber >= NUMBER_VIRTUAL_PAGES) {
 		haltSimulation();
 	}
-	//if (count_print_mem % 50 == 0) {
-		printMemory(&MPData, printFullMemory);
-	//	count_print_mem = 0;
-	//}
-	//count_print_mem++;
+	
+	printMemory(&MPData, printFullMemory);
+	
 	FindCurtProcessPCB(&CurtPCB);
 	while (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
 		readFromDisk(VICTIM_DISK, CurtPCB->pcb.ShadowPageTable[VirtualPageNumber], PageOnDisk);
@@ -52,18 +50,12 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 			FindEmptyFrame = 1;
 			break;
 		}
-		//if (i == NUMBER_PHYSICAL_PAGES - 1) {
-		//	NoFreeFrame = 1;
-		//}
+		
 	}
 	
 	if (FindEmptyFrame) {		//otherwise the FrameTable is full
 		FreeFrameNum = i;
 	}
-	
-	//if (NoFreeFrame == 0) {
-	//	FreeFrameNum = i;
-	//}
 	else {						//find free frame using approximate LRU
 
 		if (FreeFrameNum == -1) {
@@ -86,8 +78,7 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 		VictimPageNum = FrameTable.frameTable[FreeFrameNum].pageNumber;
 		FindPCBbyPID(FrameTable.frameTable[FreeFrameNum].pid, &VictimPCB);
 		if (VictimPCB->pcb.ShadowPageTable[VictimPageNum] != 0) {
-			//VictimSectorNum = VictimCount;
-			//VictimCount = VictimCount + 1;
+			
 			VictimSectorNum = VictimPCB->pcb.ShadowPageTable[VictimPageNum];
 		}
 		else {
@@ -118,6 +109,7 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 
 }
 
+//return the entry in the frame table
 int GetPageTableState(int FrameNum) {
 	struct PCB_Queue* PCBofFrame = NULL;
 	FindPCBbyPID(FrameTable.frameTable[FrameNum].pid, &PCBofFrame);
@@ -127,6 +119,7 @@ int GetPageTableState(int FrameNum) {
 	return -1;			//PCB is null
 }
 
+//get the pcb in the pcb queue
 int FindPCBbyPID(int pid, struct PCB_Queue** pcb) {
 	struct PCB_Queue* p = headPCB;
 	while (p != NULL) {
@@ -139,6 +132,7 @@ int FindPCBbyPID(int pid, struct PCB_Queue** pcb) {
 	return -1;		//did not find the pcb
 }
 
+//initialize the circular list for approximate LRU
 void BuildFrameList() {
 	//clist_init(FrameList, clist_destroy(FrameList));
 	FrameList = (CList *)malloc(sizeof(CList));
@@ -155,6 +149,7 @@ void BuildFrameList() {
 	traverseFrameList = FrameList->head;
 }
 
+//initialize the frame table
 void InitFrameTable() {
 	int i = 0;
 	for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
@@ -166,6 +161,7 @@ void InitFrameTable() {
 	
 }
 
+//called by LRU
 void ClearFrameReferenceBit(int frameNum) {
 	int framePID = FrameTable.frameTable[frameNum].pid;
 	struct PCB_Queue* framePCB = NULL;
@@ -188,6 +184,7 @@ int FindPCBbyID(int targetPID, struct PCB_Queue** PCBofFrame) {
 	return -1;
 }
 
+//Update the frame table when ending process
 void ClearProcessFrame(int pid) {
 	int i = 0;
 	for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
