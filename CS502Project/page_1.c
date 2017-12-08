@@ -43,8 +43,9 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	//}
 	//count_print_mem++;
 	FindCurtProcessPCB(&CurtPCB);
-	if (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
+	while (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
 		readFromDisk(VICTIM_DISK, CurtPCB->pcb.ShadowPageTable[VirtualPageNumber], PageOnDisk);
+		break;
 	}
 	for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
 		if (!FrameTable.frameTable[i].isUsed) {
@@ -64,13 +65,7 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	//	FreeFrameNum = i;
 	//}
 	else {						//find free frame using approximate LRU
-/*		for (i = 0; i < NUMBER_PHYSICAL_PAGES; i++) {
-			isModified = GetPageTableState(i) & PTBL_MODIFIED_BIT;
-			if (isModified == 0) {
-				FreeFrameNum = i;
-				break;
-			}
-		}								*/
+
 		if (FreeFrameNum == -1) {
 			 //can not find unmodified
 			while (FreeFrameNum == -1) {
@@ -115,8 +110,9 @@ void InvalidMemoryHandler(UINT16 VirtualPageNumber) {
 	FrameTable.frameTable[FreeFrameNum].pid = CurtPCB->pcb.process_ID;
 	FrameTable.frameTable[FreeFrameNum].isUsed = TRUE;
 
-	if (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
+	while (CurtPCB->pcb.ShadowPageTable[VirtualPageNumber] != 0) {
 		Z502WritePhysicalMemory(FreeFrameNum, PageOnDisk);
+		break;
 		//readFromDisk(VICTIM_DISK, CurtPCB->pcb.ShadowPageTable[VirtualPageNumber], PageOnDisk);
 	}
 
